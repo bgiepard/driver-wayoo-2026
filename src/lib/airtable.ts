@@ -68,6 +68,9 @@ export async function verifyPassword(
   return bcrypt.compare(plainPassword, hashedPassword);
 }
 
+// Request status types
+export type RequestStatus = 'draft' | 'published' | 'accepted' | 'paid' | 'completed' | 'cancelled';
+
 // Request types
 export interface RequestData {
   id: string;
@@ -80,7 +83,7 @@ export interface RequestData {
   adults: number;
   children: number;
   options: string;
-  status: number;
+  status: RequestStatus;
 }
 
 // Offer types
@@ -93,13 +96,13 @@ export interface OfferData {
   status: number; // 1 = pending, 2 = accepted, 3 = rejected
 }
 
-// Status dla Request: 2 = pending (new), 3 = has offers, 4 = accepted, 5 = completed, 6 = cancelled
+// Status dla Request: 'draft', 'published', 'accepted', 'paid', 'completed', 'cancelled'
 // Status dla Offer: 1 = pending, 2 = accepted, 3 = rejected
 
 export async function getAvailableRequests(): Promise<RequestData[]> {
   const records = await requestsTable
     .select({
-      filterByFormula: `OR({status} = 2, {status} = 3)`,
+      filterByFormula: `{status} = 'published'`,
     })
     .all();
 
@@ -117,7 +120,7 @@ export async function getAvailableRequests(): Promise<RequestData[]> {
       adults: record.get("adults") as number,
       children: record.get("children") as number,
       options: record.get("options") as string,
-      status: record.get("status") as number,
+      status: (record.get("status") as RequestStatus) || 'published',
     };
   });
 }
@@ -138,7 +141,7 @@ export async function getRequestById(id: string): Promise<RequestData | null> {
       adults: record.get("adults") as number,
       children: record.get("children") as number,
       options: record.get("options") as string,
-      status: (record.get("status") as number) || 2,
+      status: (record.get("status") as RequestStatus) || 'published',
     };
   } catch {
     return null;
@@ -160,8 +163,7 @@ export async function createOffer(
     status: 1, // pending
   });
 
-  // Update request status to "has offers" (3)
-  await requestsTable.update(requestId, { status: 3 });
+  // Request pozostaje 'published' dopoki pasazer nie zaakceptuje oferty
 
   const requestLinks = record.get("Request") as string[] | undefined;
   const driverLinks = record.get("Driver") as string[] | undefined;
