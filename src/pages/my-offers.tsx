@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { OfferWithRequest, OfferStatus } from "@/models";
+import { getRouteDisplay } from "@/models";
 
 const getStatusText = (status: OfferStatus) => {
   switch (status) {
@@ -191,7 +192,7 @@ function OfferCard({ offer }: { offer: OfferWithRequest }) {
           {offer.request ? (
             <>
               <p className="text-lg font-semibold text-gray-900">
-                {offer.request.from} → {offer.request.to}
+                {getRouteDisplay(offer.request.route)}
               </p>
               <p className="text-gray-500 text-sm mt-1">
                 {offer.request.date} o {offer.request.time}

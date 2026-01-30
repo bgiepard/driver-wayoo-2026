@@ -1,7 +1,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import type { RequestData } from "@/models";
-import { optionLabels } from "@/models";
+import { optionLabels, getRouteDisplay } from "@/models";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -122,7 +122,7 @@ export default function Home() {
               <div className="flex justify-between items-start">
                 <div>
                   <p className="text-lg font-semibold text-gray-900">
-                    {request.from} → {request.to}
+                    {getRouteDisplay(request.route)}
                   </p>
                   <p className="text-gray-500 text-sm mt-1">
                     {request.date} o {request.time}

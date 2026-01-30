@@ -21,6 +21,22 @@ export interface CreateDriverData {
 }
 
 // --------------------------------------------
+// ROUTE - Struktura trasy z koordynatami
+// --------------------------------------------
+export interface Place {
+  address: string;
+  placeId: string;
+  lat: number;
+  lng: number;
+}
+
+export interface Route {
+  origin: Place;
+  destination: Place;
+  waypoints: Place[];
+}
+
+// --------------------------------------------
 // REQUEST - Tabela Requests
 // --------------------------------------------
 export type RequestStatus =
@@ -35,14 +51,45 @@ export interface RequestData {
   id: string;
   userId: string;
   userEmail: string;
-  from: string;
-  to: string;
+  route: string; // JSON string (Route)
   date: string;
   time: string;
   adults: number;
   children: number;
   options: string;
   status: RequestStatus;
+}
+
+// Helper do parsowania trasy
+export function parseRoute(routeJson: string): Route | null {
+  try {
+    const route = JSON.parse(routeJson || "{}");
+    if (route.origin && route.destination) {
+      return route as Route;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Helper do wyświetlania trasy
+export function getRouteDisplay(routeJson: string): string {
+  const route = parseRoute(routeJson);
+  if (!route) return "Brak trasy";
+
+  const parts: string[] = [];
+  if (route.origin?.address) {
+    parts.push(route.origin.address.split(",")[0]);
+  }
+  route.waypoints?.forEach((wp) => {
+    if (wp.address) parts.push(wp.address.split(",")[0]);
+  });
+  if (route.destination?.address) {
+    parts.push(route.destination.address.split(",")[0]);
+  }
+
+  return parts.length > 0 ? parts.join(" → ") : "Brak trasy";
 }
 
 // --------------------------------------------
