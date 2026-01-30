@@ -1,7 +1,7 @@
 import type { FieldSet, Record as AirtableRecord } from "airtable";
 import { offersTable } from "@/lib/airtable";
 import { getRequestById } from "./requests";
-import type { OfferData, OfferWithRequest } from "@/models";
+import type { OfferData, OfferWithRequest, OfferStatus } from "@/models";
 
 export async function createOffer(
   requestId: string,
@@ -14,7 +14,7 @@ export async function createOffer(
     Driver: [driverId],
     price,
     message,
-    status: 1,
+    status: "new",
   });
 
   const requestLinks = record.get("Request") as string[] | undefined;
@@ -26,8 +26,8 @@ export async function createOffer(
     driverId: driverLinks?.[0] || "",
     price: record.get("price") as number,
     message: (record.get("message") as string) || "",
-    status: (record.get("status") as number) || 1,
-  } as OfferData;
+    status: (record.get("status") as OfferStatus) || "new",
+  };
 }
 
 function getDriverIdFromRecord(record: AirtableRecord<FieldSet>): string {
@@ -94,8 +94,8 @@ export async function getOffersByDriver(driverId: string): Promise<OfferData[]> 
         driverId: recordDriverId,
         price: record.get("price") as number,
         message: (record.get("message") as string) || "",
-        status: (record.get("status") as number) || 1,
-      } as OfferData);
+        status: (record.get("status") as OfferStatus) || "new",
+      });
     }
   }
 
@@ -132,8 +132,8 @@ export async function getOffersByRequest(requestId: string): Promise<OfferData[]
         driverId: recordDriverId,
         price: record.get("price") as number,
         message: (record.get("message") as string) || "",
-        status: (record.get("status") as number) || 1,
-      } as OfferData);
+        status: (record.get("status") as OfferStatus) || "new",
+      });
     }
   }
 

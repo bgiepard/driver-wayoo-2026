@@ -48,8 +48,12 @@ export interface RequestData {
 // --------------------------------------------
 // OFFER - Tabela Offers
 // --------------------------------------------
-// Status oferty: 1 = oczekująca, 2 = zaakceptowana, 3 = odrzucona
-export type OfferStatus = 1 | 2 | 3;
+export type OfferStatus =
+  | 'new'       // Nowa oferta, oczekuje na decyzję
+  | 'accepted'  // Zaakceptowana przez klienta
+  | 'paid'      // Opłacona
+  | 'canceled'  // Anulowana przez kierowcę
+  | 'rejected'; // Odrzucona (gdy inna oferta została zaakceptowana)
 
 export interface OfferData {
   id: string;

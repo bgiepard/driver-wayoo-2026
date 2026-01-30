@@ -1,28 +1,36 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import type { OfferWithRequest } from "@/models";
+import type { OfferWithRequest, OfferStatus } from "@/models";
 
-const getStatusText = (status: number) => {
+const getStatusText = (status: OfferStatus) => {
   switch (status) {
-    case 1:
-      return "Oczekuje";
-    case 2:
+    case "new":
+      return "Oczekuje na decyzje";
+    case "accepted":
       return "Zaakceptowana";
-    case 3:
+    case "paid":
+      return "Oplacona";
+    case "canceled":
+      return "Anulowana przez Ciebie";
+    case "rejected":
       return "Odrzucona";
     default:
       return "Nieznany";
   }
 };
 
-const getStatusStyle = (status: number) => {
+const getStatusStyle = (status: OfferStatus) => {
   switch (status) {
-    case 1:
+    case "new":
       return "bg-yellow-100 text-yellow-700";
-    case 2:
+    case "accepted":
       return "bg-green-100 text-green-700";
-    case 3:
+    case "paid":
+      return "bg-blue-100 text-blue-700";
+    case "canceled":
+      return "bg-orange-100 text-orange-700";
+    case "rejected":
       return "bg-red-100 text-red-700";
     default:
       return "bg-gray-100 text-gray-600";
@@ -73,9 +81,11 @@ export default function MyOffers() {
   }
 
   // Grupuj oferty po statusie
-  const pendingOffers = offers.filter((o) => o.status === 1);
-  const acceptedOffers = offers.filter((o) => o.status === 2);
-  const rejectedOffers = offers.filter((o) => o.status === 3);
+  const paidOffers = offers.filter((o) => o.status === "paid");
+  const acceptedOffers = offers.filter((o) => o.status === "accepted");
+  const pendingOffers = offers.filter((o) => o.status === "new");
+  const rejectedOffers = offers.filter((o) => o.status === "rejected");
+  const canceledOffers = offers.filter((o) => o.status === "canceled");
 
   return (
     <main className="py-8 px-4 max-w-[1250px] mx-auto">
@@ -98,11 +108,25 @@ export default function MyOffers() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Zaakceptowane oferty */}
+          {/* Opłacone - aktywne zlecenia */}
+          {paidOffers.length > 0 && (
+            <div>
+              <h2 className="text-sm font-medium text-blue-700 mb-3">
+                W realizacji ({paidOffers.length})
+              </h2>
+              <div className="flex flex-col gap-3">
+                {paidOffers.map((offer) => (
+                  <OfferCard key={offer.id} offer={offer} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Zaakceptowane - czekają na płatność */}
           {acceptedOffers.length > 0 && (
             <div>
               <h2 className="text-sm font-medium text-green-700 mb-3">
-                Zaakceptowane ({acceptedOffers.length})
+                Zaakceptowane - czekaja na oplate ({acceptedOffers.length})
               </h2>
               <div className="flex flex-col gap-3">
                 {acceptedOffers.map((offer) => (
@@ -112,11 +136,11 @@ export default function MyOffers() {
             </div>
           )}
 
-          {/* Oczekujące oferty */}
+          {/* Oczekujące na decyzję klienta */}
           {pendingOffers.length > 0 && (
             <div>
               <h2 className="text-sm font-medium text-yellow-700 mb-3">
-                Oczekujace ({pendingOffers.length})
+                Oczekujace na decyzje ({pendingOffers.length})
               </h2>
               <div className="flex flex-col gap-3">
                 {pendingOffers.map((offer) => (
@@ -126,7 +150,7 @@ export default function MyOffers() {
             </div>
           )}
 
-          {/* Odrzucone oferty */}
+          {/* Odrzucone przez klienta */}
           {rejectedOffers.length > 0 && (
             <div>
               <h2 className="text-sm font-medium text-red-700 mb-3">
@@ -134,6 +158,20 @@ export default function MyOffers() {
               </h2>
               <div className="flex flex-col gap-3">
                 {rejectedOffers.map((offer) => (
+                  <OfferCard key={offer.id} offer={offer} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Anulowane przez kierowcę */}
+          {canceledOffers.length > 0 && (
+            <div>
+              <h2 className="text-sm font-medium text-orange-700 mb-3">
+                Anulowane przez Ciebie ({canceledOffers.length})
+              </h2>
+              <div className="flex flex-col gap-3">
+                {canceledOffers.map((offer) => (
                   <OfferCard key={offer.id} offer={offer} />
                 ))}
               </div>
