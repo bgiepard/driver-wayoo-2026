@@ -6,6 +6,7 @@ import {
   getOffersByDriverWithRequests,
   hasDriverOfferedOnRequest,
 } from "@/services";
+import { notifyNewOffer } from "@/lib/pusher";
 
 interface SessionUser {
   id?: string;
@@ -56,6 +57,23 @@ export default async function handler(
 
       const offer = await createOffer(requestId, driverId, price, message || "");
       console.log("[API/offers] Created offer:", offer);
+
+      // Wyślij powiadomienie przez Pusher
+      try {
+        await notifyNewOffer(requestId, {
+          offerId: offer.id,
+          requestId: offer.requestId,
+          driverId: offer.driverId,
+          driverName: user.name || undefined,
+          price: offer.price,
+          message: offer.message,
+        });
+        console.log("[API/offers] Pusher notification sent");
+      } catch (pusherError) {
+        console.error("[API/offers] Pusher error:", pusherError);
+        // Nie przerywamy - oferta została utworzona
+      }
+
       return res.status(201).json(offer);
     } catch (error) {
       console.error("[API/offers] Error creating offer:", error);
