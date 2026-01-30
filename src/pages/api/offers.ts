@@ -1,7 +1,11 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth/[...nextauth]";
-import { createOffer, getOffersByDriver, hasDriverOfferedOnRequest } from "@/lib/airtable";
+import {
+  createOffer,
+  getOffersByDriverWithRequests,
+  hasDriverOfferedOnRequest,
+} from "@/services";
 
 interface SessionUser {
   id?: string;
@@ -22,12 +26,15 @@ export default async function handler(
   const user = session.user as SessionUser;
   const driverId = user.id || "";
 
+  console.log("[API/offers] Session user:", { id: driverId, email: user.email, name: user.name });
+
   if (req.method === "GET") {
     try {
-      const offers = await getOffersByDriver(driverId);
+      const offers = await getOffersByDriverWithRequests(driverId);
+      console.log("[API/offers] Found offers for driver:", offers.length);
       return res.status(200).json(offers);
     } catch (error) {
-      console.error("Error fetching offers:", error);
+      console.error("[API/offers] Error fetching offers:", error);
       return res.status(500).json({ error: "Failed to fetch offers" });
     }
   }
@@ -40,16 +47,18 @@ export default async function handler(
     }
 
     try {
-      // Check if driver already made an offer on this request
       const alreadyOffered = await hasDriverOfferedOnRequest(driverId, requestId);
+      console.log("[API/offers] Already offered:", alreadyOffered);
+
       if (alreadyOffered) {
         return res.status(400).json({ error: "Juz zlozyles oferte na to zlecenie" });
       }
 
       const offer = await createOffer(requestId, driverId, price, message || "");
+      console.log("[API/offers] Created offer:", offer);
       return res.status(201).json(offer);
     } catch (error) {
-      console.error("Error creating offer:", error);
+      console.error("[API/offers] Error creating offer:", error);
       return res.status(500).json({ error: "Failed to create offer" });
     }
   }

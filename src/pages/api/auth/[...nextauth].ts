@@ -1,6 +1,6 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { findDriverByEmail, verifyPassword } from "@/lib/airtable";
+import { findDriverByEmail, verifyPassword } from "@/services";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -17,7 +17,7 @@ export const authOptions: NextAuthOptions = {
 
         const driver = await findDriverByEmail(credentials.email);
 
-        if (!driver) {
+        if (!driver || !driver.password) {
           return null;
         }
 

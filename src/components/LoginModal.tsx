@@ -60,13 +60,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
         return;
       }
 
-      // Auto login after registration
-      await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-
+      await signIn("credentials", { email, password, redirect: false });
       resetForm();
       onClose();
     } catch {
@@ -79,16 +73,25 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setError("");
   };
 
+  const inputClass = "border border-gray-200 rounded-lg p-3 text-sm focus:border-green-500";
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white border border-gray-300 p-6 w-80">
-        <div className="flex justify-between items-center mb-4">
-          <h2>{isRegister ? "Rejestracja kierowcy" : "Logowanie kierowcy"}</h2>
-          <button onClick={onClose}>X</button>
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-96 shadow-xl">
+        <div className="flex justify-between items-center mb-5">
+          <h2 className="text-lg font-medium">
+            {isRegister ? "Rejestracja kierowcy" : "Logowanie kierowcy"}
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 text-xl leading-none"
+          >
+            ×
+          </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-2 border border-red-300 text-red-600 text-sm">
+          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
             {error}
           </div>
         )}
@@ -104,7 +107,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 placeholder="Imie i nazwisko"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="border border-gray-300 p-2"
+                className={inputClass}
                 required
               />
               <input
@@ -112,7 +115,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                 placeholder="Numer telefonu"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="border border-gray-300 p-2"
+                className={inputClass}
               />
             </>
           )}
@@ -121,7 +124,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="border border-gray-300 p-2"
+            className={inputClass}
             required
           />
           <input
@@ -129,16 +132,19 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             placeholder="Haslo"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="border border-gray-300 p-2"
+            className={inputClass}
             required
           />
-          <button type="submit" className="border border-gray-300 p-2 bg-green-600 text-white">
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white rounded-lg p-3 text-sm font-medium transition-colors"
+          >
             {isRegister ? "Zarejestruj" : "Zaloguj"}
           </button>
         </form>
 
-        <div className="mt-4 text-center text-sm">
-          <button onClick={switchMode} className="underline cursor-pointer">
+        <div className="mt-4 text-center">
+          <button onClick={switchMode} className="text-sm text-gray-500 hover:text-gray-700">
             {isRegister
               ? "Masz juz konto? Zaloguj sie"
               : "Nie masz konta? Zarejestruj sie"}

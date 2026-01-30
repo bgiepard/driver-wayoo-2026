@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import { RequestData } from "@/lib/airtable";
+import type { RequestData } from "@/models";
+import { optionLabels } from "@/models";
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -75,7 +76,7 @@ export default function Home() {
       const opts = JSON.parse(optionsStr);
       const active = Object.entries(opts)
         .filter(([, v]) => v)
-        .map(([k]) => k);
+        .map(([k]) => optionLabels[k as keyof typeof optionLabels] || k);
       return active.length > 0 ? active.join(", ") : "Brak";
     } catch {
       return "Brak";
@@ -84,60 +85,59 @@ export default function Home() {
 
   if (status === "loading" || loading) {
     return (
-      <main className="p-4 max-w-[1250px] mx-auto">
-        <p>Ladowanie...</p>
+      <main className="py-8 px-4 max-w-[1250px] mx-auto">
+        <p className="text-gray-500">Ladowanie...</p>
       </main>
     );
   }
 
   if (!session) {
     return (
-      <main className="p-4 max-w-[1250px] mx-auto">
-        <section className="border border-gray-300 p-8 text-center">
-          <h1 className="text-2xl mb-4">Panel Kierowcy Wayoo</h1>
-          <p className="mb-4">Zaloguj sie, aby zobaczyc dostepne zlecenia.</p>
-        </section>
+      <main className="py-8 px-4 max-w-[1250px] mx-auto">
+        <div className="bg-white rounded-lg p-12 text-center">
+          <h1 className="text-2xl font-semibold mb-4">Panel Kierowcy Wayoo</h1>
+          <p className="text-gray-500">Zaloguj sie, aby zobaczyc dostepne zlecenia.</p>
+        </div>
       </main>
     );
   }
 
   return (
-    <main className="p-4 max-w-[1250px] mx-auto">
-      <section className="mb-4">
-        <h1 className="text-2xl mb-4">Dostepne zlecenia</h1>
-        <p className="text-gray-600 mb-4">
-          Witaj, {session.user?.name}! Zloz oferte na wybrane zlecenie.
+    <main className="py-8 px-4 max-w-[1250px] mx-auto">
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold mb-2">Dostepne zlecenia</h1>
+        <p className="text-gray-500">
+          Witaj, {session.user?.name}! Ponizej znajdziesz zlecenia na ktore mozesz zlozyc oferte.
         </p>
-      </section>
+      </div>
 
       {requests.length === 0 ? (
-        <section className="border border-gray-300 p-8 text-center">
-          <p>Brak dostepnych zlecen.</p>
-        </section>
+        <div className="bg-white rounded-lg p-12 text-center text-gray-500">
+          Brak dostepnych zlecen. Zlozyles juz oferty na wszystkie aktywne zlecenia lub nie ma nowych.
+        </div>
       ) : (
-        <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {requests.map((request) => (
-            <div key={request.id} className="border border-gray-300 p-4">
+            <div key={request.id} className="bg-white rounded-lg p-5">
               <div className="flex justify-between items-start">
                 <div>
-                  <p className="font-bold text-lg">
-                    {request.from} -{">"} {request.to}
+                  <p className="text-lg font-semibold text-gray-900">
+                    {request.from} → {request.to}
                   </p>
-                  <p className="text-gray-600">
-                    Data: {request.date} o {request.time}
+                  <p className="text-gray-500 text-sm mt-1">
+                    {request.date} o {request.time}
                   </p>
-                  <p className="text-gray-600">
-                    Pasazerowie: {request.adults} doroslych
-                    {request.children > 0 && `, ${request.children} dzieci`}
+                  <p className="text-gray-500 text-sm">
+                    {request.adults} doroslych{request.children > 0 && `, ${request.children} dzieci`}
                   </p>
-                  <p className="text-gray-600">
+                  <p className="text-gray-500 text-sm">
                     Opcje: {parseOptions(request.options)}
                   </p>
                 </div>
                 {selectedRequest !== request.id ? (
                   <button
                     onClick={() => setSelectedRequest(request.id)}
-                    className="border border-green-600 bg-green-600 text-white px-4 py-2"
+                    className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     Zloz oferte
                   </button>
@@ -149,7 +149,7 @@ export default function Home() {
                       setMessage("");
                       setError("");
                     }}
-                    className="border border-gray-400 px-4 py-2"
+                    className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-5 py-2 rounded-lg text-sm font-medium transition-colors"
                   >
                     Anuluj
                   </button>
@@ -157,18 +157,18 @@ export default function Home() {
               </div>
 
               {selectedRequest === request.id && (
-                <div className="mt-4 p-4 border border-gray-200 bg-gray-50">
-                  <h3 className="font-bold mb-2">Zloz oferte</h3>
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <h3 className="font-medium mb-3">Zloz oferte</h3>
                   {error && (
-                    <p className="text-red-600 mb-2">{error}</p>
+                    <p className="text-red-600 text-sm mb-3">{error}</p>
                   )}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     <input
                       type="number"
                       placeholder="Cena (PLN)"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
-                      className="border border-gray-300 p-2"
+                      className="border border-gray-200 rounded-lg p-3 text-sm focus:border-green-500"
                       min="0"
                       step="0.01"
                     />
@@ -176,13 +176,13 @@ export default function Home() {
                       placeholder="Wiadomosc (opcjonalnie)"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      className="border border-gray-300 p-2"
+                      className="border border-gray-200 rounded-lg p-3 text-sm focus:border-green-500 resize-none"
                       rows={3}
                     />
                     <button
                       onClick={() => handleSubmitOffer(request.id)}
                       disabled={submitting}
-                      className="border border-green-600 bg-green-600 text-white px-4 py-2 disabled:opacity-50"
+                      className="bg-green-600 hover:bg-green-700 text-white px-5 py-3 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
                     >
                       {submitting ? "Wysylanie..." : "Wyslij oferte"}
                     </button>
@@ -191,7 +191,7 @@ export default function Home() {
               )}
             </div>
           ))}
-        </section>
+        </div>
       )}
     </main>
   );

@@ -7,18 +7,18 @@ export default function Account() {
 
   if (status === "loading") {
     return (
-      <main className="p-4 max-w-[1250px] mx-auto">
-        <p>Ladowanie...</p>
+      <main className="py-8 px-4 max-w-[1250px] mx-auto">
+        <p className="text-gray-500">Ladowanie...</p>
       </main>
     );
   }
 
   if (!session) {
     return (
-      <main className="p-4 max-w-[1250px] mx-auto">
-        <section className="border border-gray-300 p-8 text-center">
-          <p>Zaloguj sie, aby zobaczyc swoje konto.</p>
-        </section>
+      <main className="py-8 px-4 max-w-[1250px] mx-auto">
+        <div className="bg-white rounded-lg p-12 text-center text-gray-500">
+          Zaloguj sie, aby zobaczyc swoje konto.
+        </div>
       </main>
     );
   }
@@ -29,29 +29,29 @@ export default function Account() {
   };
 
   return (
-    <main className="p-4 max-w-[1250px] mx-auto">
-      <section className="mb-4">
-        <h1 className="text-2xl mb-4">Moje konto</h1>
-      </section>
+    <main className="py-8 px-4 max-w-[1250px] mx-auto">
+      <h1 className="text-2xl font-semibold mb-6">Moje konto</h1>
 
-      <section className="border border-gray-300 p-4 mb-4">
-        <h2 className="font-bold mb-4">Dane kierowcy</h2>
-        <p>
-          <span className="text-gray-600">Imie:</span> {session.user?.name}
-        </p>
-        <p>
-          <span className="text-gray-600">Email:</span> {session.user?.email}
-        </p>
-      </section>
+      <div className="bg-white rounded-lg p-6 mb-4">
+        <h2 className="text-lg font-medium mb-4">Dane kierowcy</h2>
+        <div className="space-y-3">
+          <div className="flex justify-between py-3 border-b border-gray-100">
+            <span className="text-gray-500">Imie</span>
+            <span className="font-medium">{session.user?.name}</span>
+          </div>
+          <div className="flex justify-between py-3">
+            <span className="text-gray-500">Email</span>
+            <span>{session.user?.email}</span>
+          </div>
+        </div>
+      </div>
 
-      <section className="border border-gray-300 p-4">
-        <button
-          onClick={handleSignOut}
-          className="border border-red-600 text-red-600 px-4 py-2"
-        >
-          Wyloguj sie
-        </button>
-      </section>
+      <button
+        onClick={handleSignOut}
+        className="bg-white rounded-lg p-4 text-red-600 hover:bg-red-50 transition-colors w-full text-left font-medium"
+      >
+        Wyloguj sie
+      </button>
     </main>
   );
 }

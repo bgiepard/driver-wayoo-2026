@@ -1,7 +1,14 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth/[...nextauth]";
-import { getAvailableRequests, getRequestById } from "@/lib/airtable";
+import { getAvailableRequests, getRequestById } from "@/services";
+import { getDriverOfferedRequestIds } from "@/services";
+
+interface SessionUser {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+}
 
 export default async function handler(
   req: NextApiRequest,
@@ -12,6 +19,9 @@ export default async function handler(
   if (!session || !session.user) {
     return res.status(401).json({ error: "Unauthorized" });
   }
+
+  const user = session.user as SessionUser;
+  const driverId = user.id || "";
 
   if (req.method === "GET") {
     const { id } = req.query;
@@ -24,8 +34,15 @@ export default async function handler(
         }
         return res.status(200).json(request);
       } else {
-        const requests = await getAvailableRequests();
-        return res.status(200).json(requests);
+        // Pobierz dostępne zlecenia i odfiltruj te, na które kierowca już złożył ofertę
+        const allRequests = await getAvailableRequests();
+        const offeredRequestIds = await getDriverOfferedRequestIds(driverId);
+
+        const availableRequests = allRequests.filter(
+          (r) => !offeredRequestIds.includes(r.id)
+        );
+
+        return res.status(200).json(availableRequests);
       }
     } catch (error) {
       console.error("Error fetching requests:", error);

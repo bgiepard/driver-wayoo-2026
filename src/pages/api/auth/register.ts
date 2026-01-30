@@ -1,5 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from "next";
-import { findDriverByEmail, createDriver } from "@/lib/airtable";
+import { findDriverByEmail, createDriver } from "@/services";
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,7 +22,7 @@ export default async function handler(
       return res.status(400).json({ error: "Kierowca juz istnieje" });
     }
 
-    const driver = await createDriver(email, password, name, phone);
+    const driver = await createDriver({ email, password, name, phone });
 
     return res.status(201).json({
       message: "Konto utworzone pomyslnie",
