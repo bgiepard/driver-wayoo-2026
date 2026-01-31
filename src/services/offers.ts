@@ -10,20 +10,16 @@ export async function createOffer(
   message: string,
   vehicleId?: string
 ): Promise<OfferData> {
-  const createData: Record<string, unknown> = {
+  const createData = {
     Request: [requestId],
     Driver: [driverId],
     price,
     message,
     status: "new",
+    ...(vehicleId && { vehicleId }),
   };
 
-  // Dodaj vehicleId jeśli podano
-  if (vehicleId) {
-    createData.vehicleId = vehicleId;
-  }
-
-  const record = await offersTable.create(createData);
+  const record = await offersTable.create(createData as Partial<FieldSet>);
 
   const requestLinks = record.get("Request") as string[] | undefined;
   const driverLinks = record.get("Driver") as string[] | undefined;
