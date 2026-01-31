@@ -7,15 +7,23 @@ export async function createOffer(
   requestId: string,
   driverId: string,
   price: number,
-  message: string
+  message: string,
+  vehicleId?: string
 ): Promise<OfferData> {
-  const record = await offersTable.create({
+  const createData: Record<string, unknown> = {
     Request: [requestId],
     Driver: [driverId],
     price,
     message,
     status: "new",
-  });
+  };
+
+  // Dodaj vehicleId jeśli podano
+  if (vehicleId) {
+    createData.vehicleId = vehicleId;
+  }
+
+  const record = await offersTable.create(createData);
 
   const requestLinks = record.get("Request") as string[] | undefined;
   const driverLinks = record.get("Driver") as string[] | undefined;
@@ -24,6 +32,7 @@ export async function createOffer(
     id: record.id,
     requestId: requestLinks?.[0] || "",
     driverId: driverLinks?.[0] || "",
+    vehicleId: (record.get("vehicleId") as string) || undefined,
     price: record.get("price") as number,
     message: (record.get("message") as string) || "",
     status: (record.get("status") as OfferStatus) || "new",
@@ -92,6 +101,7 @@ export async function getOffersByDriver(driverId: string): Promise<OfferData[]> 
         id: record.id,
         requestId: recordRequestId,
         driverId: recordDriverId,
+        vehicleId: (record.get("vehicleId") as string) || undefined,
         price: record.get("price") as number,
         message: (record.get("message") as string) || "",
         status: (record.get("status") as OfferStatus) || "new",
@@ -130,6 +140,7 @@ export async function getOffersByRequest(requestId: string): Promise<OfferData[]
         id: record.id,
         requestId: recordRequestId,
         driverId: recordDriverId,
+        vehicleId: (record.get("vehicleId") as string) || undefined,
         price: record.get("price") as number,
         message: (record.get("message") as string) || "",
         status: (record.get("status") as OfferStatus) || "new",

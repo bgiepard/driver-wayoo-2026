@@ -23,6 +23,9 @@ export default function Header() {
               <Link href="/my-offers" className="text-gray-600 hover:text-green-600">
                 Moje oferty
               </Link>
+              <Link href="/my-fleet" className="text-gray-600 hover:text-green-600">
+                Moja flota
+              </Link>
               <Link href="/account" className="text-gray-600 hover:text-green-600">
                 Konto
               </Link>

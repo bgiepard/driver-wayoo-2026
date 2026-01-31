@@ -106,6 +106,7 @@ export interface OfferData {
   id: string;
   requestId: string;
   driverId: string;
+  vehicleId?: string;  // ID pojazdu z floty kierowcy
   price: number;
   message: string;
   status: OfferStatus;
@@ -132,4 +133,63 @@ export const optionLabels: Record<keyof Options, string> = {
   tv: "TV",
   airConditioning: "Klimatyzacja",
   powerOutlet: "Gniazdko",
+};
+
+// --------------------------------------------
+// VEHICLE - Tabela Vehicles (Flota kierowcy)
+// --------------------------------------------
+export type VehicleType =
+  | 'bus'        // Autobus
+  | 'minibus'    // Minibus
+  | 'van'        // Van
+  | 'car';       // Samochód osobowy
+
+export interface Vehicle {
+  id: string;
+  driverId: string;
+  name: string;           // Nazwa własna pojazdu np. "Mercedes Sprinter"
+  type: VehicleType;
+  brand: string;          // Marka
+  model: string;          // Model
+  year: number;           // Rok produkcji
+  seats: number;          // Liczba miejsc
+  licensePlate: string;   // Numer rejestracyjny
+  color: string;          // Kolor
+  description?: string;   // Opis dodatkowy
+  photos: string[];       // URL zdjęć (max 5)
+  // Wyposażenie
+  hasWifi: boolean;
+  hasWC: boolean;
+  hasTV: boolean;
+  hasAirConditioning: boolean;
+  hasPowerOutlets: boolean;
+  hasLuggage: boolean;    // Bagażnik
+  isActive: boolean;      // Czy pojazd jest aktywny
+  createdAt: string;
+}
+
+export interface CreateVehicleData {
+  name: string;
+  type: VehicleType;
+  brand: string;
+  model: string;
+  year: number;
+  seats: number;
+  licensePlate: string;
+  color: string;
+  description?: string;
+  photos?: string[];
+  hasWifi?: boolean;
+  hasWC?: boolean;
+  hasTV?: boolean;
+  hasAirConditioning?: boolean;
+  hasPowerOutlets?: boolean;
+  hasLuggage?: boolean;
+}
+
+export const vehicleTypeLabels: Record<VehicleType, string> = {
+  bus: "Autobus",
+  minibus: "Minibus",
+  van: "Van",
+  car: "Samochód osobowy",
 };

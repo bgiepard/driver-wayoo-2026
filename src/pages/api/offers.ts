@@ -41,7 +41,7 @@ export default async function handler(
   }
 
   if (req.method === "POST") {
-    const { requestId, price, message } = req.body;
+    const { requestId, price, message, vehicleId } = req.body;
 
     if (!requestId || !price) {
       return res.status(400).json({ error: "Request ID and price are required" });
@@ -55,7 +55,7 @@ export default async function handler(
         return res.status(400).json({ error: "Juz zlozyles oferte na to zlecenie" });
       }
 
-      const offer = await createOffer(requestId, driverId, price, message || "");
+      const offer = await createOffer(requestId, driverId, price, message || "", vehicleId);
       console.log("[API/offers] Created offer:", offer);
 
       // Wyślij powiadomienie przez Pusher

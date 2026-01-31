@@ -9,6 +9,7 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
 export const driversTable = base(process.env.AIRTABLE_DRIVERS_TABLE || "Drivers");
 export const requestsTable = base("Requests");
 export const offersTable = base("Offers");
+export const vehiclesTable = base("Vehicles");
 
 // Re-eksport typów z models dla wstecznej kompatybilności
 export type {
@@ -16,4 +17,6 @@ export type {
   RequestData,
   RequestStatus,
   OfferData,
+  Vehicle,
+  VehicleType,
 } from "@/models";
