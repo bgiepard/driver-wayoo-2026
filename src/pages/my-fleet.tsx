@@ -12,6 +12,8 @@ export default function MyFleet() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<{ photos: string[]; index: number } | null>(null);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form state
@@ -111,11 +113,35 @@ export default function MyFleet() {
     setError("");
 
     try {
+      // Upload zdjęć do Cloudinary (tylko nowe - base64)
+      const uploadedPhotos: string[] = [];
+
+      for (const photo of formData.photos || []) {
+        if (photo.startsWith("data:")) {
+          // Nowe zdjęcie - upload do Cloudinary
+          const res = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ image: photo }),
+          });
+
+          if (res.ok) {
+            const data = await res.json();
+            uploadedPhotos.push(data.url);
+          } else {
+            throw new Error("Blad uploadu zdjecia");
+          }
+        } else {
+          // Istniejące zdjęcie z URL - zachowaj
+          uploadedPhotos.push(photo);
+        }
+      }
+
       const url = "/api/vehicles";
       const method = editingVehicle ? "PUT" : "POST";
       const body = editingVehicle
-        ? { id: editingVehicle.id, ...formData }
-        : formData;
+        ? { id: editingVehicle.id, ...formData, photos: uploadedPhotos }
+        : { ...formData, photos: uploadedPhotos };
 
       const res = await fetch(url, {
         method,
@@ -175,10 +201,9 @@ export default function MyFleet() {
     const files = e.target.files;
     if (!files) return;
 
-    // Konwertuj zdjecia do base64 (w produkcji lepiej uzywac cloud storage)
-    Array.from(files).forEach((file) => {
-      if (formData.photos && formData.photos.length >= 5) return;
+    const filesToAdd = Array.from(files).slice(0, 5 - (formData.photos?.length || 0));
 
+    filesToAdd.forEach((file) => {
       const reader = new FileReader();
       reader.onload = (event) => {
         const base64 = event.target?.result as string;
@@ -189,6 +214,11 @@ export default function MyFleet() {
       };
       reader.readAsDataURL(file);
     });
+
+    // Reset input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
   };
 
   const removePhoto = (index: number) => {
@@ -196,6 +226,56 @@ export default function MyFleet() {
       ...prev,
       photos: prev.photos?.filter((_, i) => i !== index) || [],
     }));
+  };
+
+  const movePhoto = (fromIndex: number, toIndex: number) => {
+    if (toIndex < 0 || toIndex >= (formData.photos?.length || 0)) return;
+    setFormData((prev) => {
+      const photos = [...(prev.photos || [])];
+      const [moved] = photos.splice(fromIndex, 1);
+      photos.splice(toIndex, 0, moved);
+      return { ...prev, photos };
+    });
+  };
+
+  const handleDragStart = (index: number) => {
+    setDragIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (dragIndex !== null && dragIndex !== index) {
+      movePhoto(dragIndex, index);
+      setDragIndex(index);
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDragIndex(null);
+  };
+
+  const openLightbox = (photos: string[], index: number) => {
+    setLightbox({ photos, index });
+  };
+
+  const closeLightbox = () => {
+    setLightbox(null);
+  };
+
+  const lightboxPrev = () => {
+    if (!lightbox) return;
+    setLightbox({
+      ...lightbox,
+      index: (lightbox.index - 1 + lightbox.photos.length) % lightbox.photos.length,
+    });
+  };
+
+  const lightboxNext = () => {
+    if (!lightbox) return;
+    setLightbox({
+      ...lightbox,
+      index: (lightbox.index + 1) % lightbox.photos.length,
+    });
   };
 
   if (status === "loading" || loading) {
@@ -264,32 +344,42 @@ export default function MyFleet() {
                 vehicle.isActive ? "border-slate-200" : "border-slate-200 opacity-60"
               }`}
             >
-              {/* Photo */}
-              <div className="h-40 bg-slate-100 relative">
-                {vehicle.photos && vehicle.photos.length > 0 ? (
-                  <img
-                    src={vehicle.photos[0]}
-                    alt={vehicle.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <svg className="w-12 h-12 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                )}
-                {/* Status badge */}
-                <div className={`absolute top-2 right-2 px-2 py-1 rounded text-xs font-medium ${
-                  vehicle.isActive
-                    ? "bg-emerald-100 text-emerald-700"
-                    : "bg-slate-100 text-slate-600"
-                }`}>
-                  {vehicle.isActive ? "Aktywny" : "Nieaktywny"}
+              {/* Photos */}
+              <div className="p-3 bg-slate-50 border-b border-slate-100">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 rounded text-xs font-medium bg-white text-slate-700 border border-slate-200">
+                    {vehicleTypeLabels[vehicle.type]}
+                  </span>
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                    vehicle.isActive
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-slate-200 text-slate-600"
+                  }`}>
+                    {vehicle.isActive ? "Aktywny" : "Nieaktywny"}
+                  </span>
                 </div>
-                {/* Type badge */}
-                <div className="absolute top-2 left-2 px-2 py-1 rounded text-xs font-medium bg-white/90 text-slate-700">
-                  {vehicleTypeLabels[vehicle.type]}
+                <div className="flex gap-2">
+                  {vehicle.photos && vehicle.photos.length > 0 ? (
+                    vehicle.photos.map((photo, index) => (
+                      <button
+                        key={index}
+                        onClick={() => openLightbox(vehicle.photos, index)}
+                        className="w-16 h-16 rounded-lg overflow-hidden bg-slate-200 flex-shrink-0 hover:opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <img
+                          src={photo}
+                          alt={`${vehicle.name} ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                      </button>
+                    ))
+                  ) : (
+                    <div className="w-16 h-16 rounded-lg bg-slate-200 flex items-center justify-center">
+                      <svg className="w-6 h-6 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -551,22 +641,63 @@ export default function MyFleet() {
 
               {/* Photos */}
               <div>
-                <h3 className="text-sm font-medium text-slate-700 mb-3">
+                <h3 className="text-sm font-medium text-slate-700 mb-1">
                   Zdjecia (max 5)
                 </h3>
+                <p className="text-xs text-slate-500 mb-3">Przeciagnij zdjecia, aby zmienic kolejnosc. Pierwsze zdjecie bedzie glowne.</p>
                 <div className="grid grid-cols-5 gap-3">
                   {formData.photos?.map((photo, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-slate-100">
+                    <div
+                      key={index}
+                      draggable
+                      onDragStart={() => handleDragStart(index)}
+                      onDragOver={(e) => handleDragOver(e, index)}
+                      onDragEnd={handleDragEnd}
+                      className={`relative aspect-square rounded-lg overflow-hidden bg-slate-100 cursor-move group ${
+                        dragIndex === index ? "opacity-50 ring-2 ring-emerald-500" : ""
+                      } ${index === 0 ? "ring-2 ring-emerald-500" : ""}`}
+                    >
                       <img src={photo} alt="" className="w-full h-full object-cover" />
+                      {index === 0 && (
+                        <div className="absolute bottom-0 left-0 right-0 bg-emerald-500 text-white text-xs text-center py-0.5">
+                          Glowne
+                        </div>
+                      )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                       <button
                         type="button"
                         onClick={() => removePhoto(index)}
-                        className="absolute top-1 right-1 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white"
+                        className="absolute top-1 right-1 p-1 bg-black/50 hover:bg-black/70 rounded-full text-white opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                         </svg>
                       </button>
+                      {/* Strzalki do zmiany kolejnosci */}
+                      <div className="absolute bottom-1 left-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        {index > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(index, index - 1)}
+                            className="p-1 bg-black/50 hover:bg-black/70 rounded text-white"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                        )}
+                        {index < (formData.photos?.length || 0) - 1 && (
+                          <button
+                            type="button"
+                            onClick={() => movePhoto(index, index + 1)}
+                            className="p-1 bg-black/50 hover:bg-black/70 rounded text-white"
+                          >
+                            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                   {(!formData.photos || formData.photos.length < 5) && (
@@ -640,6 +771,69 @@ export default function MyFleet() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {lightbox && (
+        <div
+          className="fixed inset-0 bg-black/90 flex items-center justify-center z-[60]"
+          onClick={closeLightbox}
+        >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            className="absolute top-4 right-4 p-2 text-white/70 hover:text-white transition-colors"
+          >
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Previous button */}
+          {lightbox.photos.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                lightboxPrev();
+              }}
+              className="absolute left-4 p-2 text-white/70 hover:text-white transition-colors"
+            >
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Image */}
+          <img
+            src={lightbox.photos[lightbox.index]}
+            alt=""
+            className="max-w-[90vw] max-h-[90vh] object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+
+          {/* Next button */}
+          {lightbox.photos.length > 1 && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                lightboxNext();
+              }}
+              className="absolute right-4 p-2 text-white/70 hover:text-white transition-colors"
+            >
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          )}
+
+          {/* Counter */}
+          {lightbox.photos.length > 1 && (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white/70 text-sm">
+              {lightbox.index + 1} / {lightbox.photos.length}
+            </div>
+          )}
         </div>
       )}
     </main>
