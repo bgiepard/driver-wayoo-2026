@@ -62,9 +62,31 @@ export default async function handler(
 
       // Pobierz request aby uzyskać userId pasażera
       const request = await getRequestById(requestId);
+      console.log("[API/offers] Request found:", request);
       const passengerId = request?.userId;
+      console.log("[API/offers] Passenger ID:", passengerId);
 
-      // Wyślij powiadomienie przez Pusher
+      // 1. Najpierw zapisz powiadomienie do bazy danych (dla pasażera)
+      if (passengerId) {
+        try {
+          const notification = await notificationsTable.create({
+            userId: passengerId,
+            type: "new_offer",
+            title: "Nowa oferta!",
+            message: `${user.name || "Kierowca"} złożył ofertę: ${offer.price} PLN`,
+            link: `/request/${requestId}/offers`,
+            read: false,
+            createdAt: new Date().toISOString(),
+          });
+          console.log("[API/offers] Notification saved to database:", notification.id);
+        } catch (dbError) {
+          console.error("[API/offers] Error saving notification to database:", dbError);
+        }
+      } else {
+        console.error("[API/offers] BRAK passengerId! request:", JSON.stringify(request), "requestId:", requestId);
+      }
+
+      // 2. Potem wyślij powiadomienie przez Pusher (real-time)
       try {
         await notifyNewOffer(requestId, {
           offerId: offer.id,
@@ -77,28 +99,6 @@ export default async function handler(
         console.log("[API/offers] Pusher notification sent");
       } catch (pusherError) {
         console.error("[API/offers] Pusher error:", pusherError);
-        // Nie przerywamy - oferta została utworzona
-      }
-
-      // Zapisz powiadomienie do bazy danych (dla pasażera)
-      if (passengerId) {
-        try {
-          await notificationsTable.create({
-            userId: passengerId,
-            type: "new_offer",
-            title: "Nowa oferta!",
-            message: `${user.name || "Kierowca"} złożył ofertę: ${offer.price} PLN`,
-            link: `/request/${requestId}/offers`,
-            read: false,
-            createdAt: new Date().toISOString(),
-          });
-          console.log("[API/offers] Notification saved to database for user:", passengerId);
-        } catch (dbError) {
-          console.error("[API/offers] Error saving notification to database:", dbError);
-          // Nie przerywamy - oferta została utworzona
-        }
-      } else {
-        console.warn("[API/offers] Could not find passenger userId for request:", requestId);
       }
 
       return res.status(201).json(offer);
