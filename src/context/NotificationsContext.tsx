@@ -15,6 +15,7 @@ interface NotificationsContextType {
   notifications: Notification[];
   unreadCount: number;
   addNotification: (notification: Omit<Notification, "id" | "read" | "createdAt">) => void;
+  addLocalNotification: (notification: Omit<Notification, "id" | "read" | "createdAt">) => void;
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   clearAll: () => void;
@@ -69,6 +70,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
     }
   }, [status, session?.user, fetchNotifications]);
 
+  // Dodaje powiadomienie lokalnie i zapisuje do bazy
   const addNotification = useCallback(
     async (notification: Omit<Notification, "id" | "read" | "createdAt">) => {
       const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -104,6 +106,22 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       }
     },
     [session?.user]
+  );
+
+  // Dodaje powiadomienie TYLKO lokalnie (bez zapisu do bazy)
+  // Uzywane przez Pusher - powiadomienie jest juz zapisane przez nadawce
+  const addLocalNotification = useCallback(
+    (notification: Omit<Notification, "id" | "read" | "createdAt">) => {
+      const tempId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const newNotification: Notification = {
+        ...notification,
+        id: tempId,
+        read: false,
+        createdAt: new Date(),
+      };
+      setNotifications((prev) => [newNotification, ...prev].slice(0, 50));
+    },
+    []
   );
 
   const markAsRead = useCallback((id: string) => {
@@ -142,6 +160,7 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
         notifications,
         unreadCount,
         addNotification,
+        addLocalNotification,
         markAsRead,
         markAllAsRead,
         clearAll,
