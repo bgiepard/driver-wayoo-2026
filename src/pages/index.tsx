@@ -1,5 +1,5 @@
 import { useSession } from "next-auth/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { RequestData, Vehicle } from "@/models";
 import { optionLabels, getRouteDisplay, vehicleTypeLabels } from "@/models";
@@ -15,6 +15,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const isSubmittingRef = useRef(false);
 
   useEffect(() => {
     if (session) {
@@ -49,11 +50,15 @@ export default function Home() {
   };
 
   const handleSubmitOffer = async (requestId: string) => {
+    // Zapobiegaj podwojnemu wywolaniu
+    if (isSubmittingRef.current) return;
+
     if (!price) {
       setError("Podaj cene");
       return;
     }
 
+    isSubmittingRef.current = true;
     setSubmitting(true);
     setError("");
 
@@ -84,6 +89,7 @@ export default function Home() {
     } catch {
       setError("Blad podczas skladania oferty");
     } finally {
+      isSubmittingRef.current = false;
       setSubmitting(false);
     }
   };

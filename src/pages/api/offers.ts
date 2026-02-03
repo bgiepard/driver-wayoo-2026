@@ -29,15 +29,11 @@ export default async function handler(
   const user = session.user as SessionUser;
   const driverId = user.id || "";
 
-  console.log("[API/offers] Session user:", { id: driverId, email: user.email, name: user.name });
-
   if (req.method === "GET") {
     try {
       const offers = await getOffersByDriverWithRequests(driverId);
-      console.log("[API/offers] Found offers for driver:", offers.length);
       return res.status(200).json(offers);
-    } catch (error) {
-      console.error("[API/offers] Error fetching offers:", error);
+    } catch {
       return res.status(500).json({ error: "Failed to fetch offers" });
     }
   }
@@ -51,42 +47,35 @@ export default async function handler(
 
     try {
       const alreadyOffered = await hasDriverOfferedOnRequest(driverId, requestId);
-      console.log("[API/offers] Already offered:", alreadyOffered);
 
       if (alreadyOffered) {
         return res.status(400).json({ error: "Juz zlozyles oferte na to zlecenie" });
       }
 
       const offer = await createOffer(requestId, driverId, price, message || "", vehicleId);
-      console.log("[API/offers] Created offer:", offer);
 
-      // Pobierz request aby uzyskać userId pasażera
+      // Pobierz request aby uzyskac userId pasazera
       const request = await getRequestById(requestId);
-      console.log("[API/offers] Request found:", request);
       const passengerId = request?.userId;
-      console.log("[API/offers] Passenger ID:", passengerId);
 
-      // 1. Najpierw zapisz powiadomienie do bazy danych (dla pasażera)
+      // 1. Zapisz powiadomienie do bazy danych (dla pasazera)
       if (passengerId) {
         try {
-          const notification = await notificationsTable.create({
+          await notificationsTable.create({
             userId: passengerId,
             type: "new_offer",
             title: "Nowa oferta!",
-            message: `${user.name || "Kierowca"} złożył ofertę: ${offer.price} PLN`,
+            message: `${user.name || "Kierowca"} zlozyl oferte: ${offer.price} PLN`,
             link: `/request/${requestId}/offers`,
             read: false,
             createdAt: new Date().toISOString(),
           });
-          console.log("[API/offers] Notification saved to database:", notification.id);
-        } catch (dbError) {
-          console.error("[API/offers] Error saving notification to database:", dbError);
+        } catch {
+          // Ignore notification errors
         }
-      } else {
-        console.error("[API/offers] BRAK passengerId! request:", JSON.stringify(request), "requestId:", requestId);
       }
 
-      // 2. Potem wyślij powiadomienie przez Pusher (real-time)
+      // 2. Wyslij powiadomienie przez Pusher (real-time)
       try {
         await notifyNewOffer(requestId, {
           offerId: offer.id,
@@ -96,14 +85,12 @@ export default async function handler(
           price: offer.price,
           message: offer.message,
         });
-        console.log("[API/offers] Pusher notification sent");
-      } catch (pusherError) {
-        console.error("[API/offers] Pusher error:", pusherError);
+      } catch {
+        // Ignore Pusher errors
       }
 
       return res.status(201).json(offer);
-    } catch (error) {
-      console.error("[API/offers] Error creating offer:", error);
+    } catch {
       return res.status(500).json({ error: "Failed to create offer" });
     }
   }
