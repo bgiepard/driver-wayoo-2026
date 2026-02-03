@@ -14,34 +14,55 @@ export function PusherProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const { addLocalNotification, refreshNotifications } = useNotifications();
   const channelRef = useRef<Channel | null>(null);
+  const subscribedDriverIdRef = useRef<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
+
+  // Przechowuj funkcje w refach aby uniknac problemow z zaleznosciami
+  const addLocalNotificationRef = useRef(addLocalNotification);
+  const refreshNotificationsRef = useRef(refreshNotifications);
+
+  // Aktualizuj refy gdy funkcje sie zmienia
+  useEffect(() => {
+    addLocalNotificationRef.current = addLocalNotification;
+    refreshNotificationsRef.current = refreshNotifications;
+  }, [addLocalNotification, refreshNotifications]);
 
   const driverId = (session?.user as any)?.id;
 
   useEffect(() => {
-    if (status !== "authenticated" || !driverId) {
-      // Wyczysc subskrypcje gdy uzytkownik sie wyloguje
-      if (channelRef.current) {
-        const pusher = getPusherClient();
-        pusher.unsubscribe(`driver-${driverId}`);
-        channelRef.current = null;
-      }
+    // Wyczysc poprzednia subskrypcje jesli driverId sie zmienil
+    if (subscribedDriverIdRef.current && subscribedDriverIdRef.current !== driverId) {
+      const pusher = getPusherClient();
+      pusher.unsubscribe(`driver-${subscribedDriverIdRef.current}`);
+      channelRef.current = null;
+      subscribedDriverIdRef.current = null;
       setIsConnected(false);
+    }
+
+    if (status !== "authenticated" || !driverId) {
+      return;
+    }
+
+    // Juz subskrybowany na ten kanal
+    if (subscribedDriverIdRef.current === driverId) {
       return;
     }
 
     const pusher = getPusherClient();
 
+    console.log("[Pusher] Subskrybuje kanal driver-" + driverId);
+
     // Subskrybuj kanal kierowcy
     const channel = pusher.subscribe(`driver-${driverId}`);
     channelRef.current = channel;
+    subscribedDriverIdRef.current = driverId;
 
     // Event: oferta zaakceptowana
     channel.bind("offer-accepted", (data: OfferAcceptedEvent) => {
       console.log("[Pusher] Otrzymano event offer-accepted:", data);
 
       // Dodaj lokalnie (bez zapisu do bazy - juz zapisane przez nadawce)
-      addLocalNotification({
+      addLocalNotificationRef.current({
         type: "offer_accepted",
         title: "Oferta zaakceptowana!",
         message: data.message || "Twoja oferta zostala zaakceptowana przez klienta.",
@@ -49,7 +70,7 @@ export function PusherProvider({ children }: { children: ReactNode }) {
       });
 
       // Odswierz powiadomienia z bazy (zsynchronizuje prawdziwe ID)
-      setTimeout(() => refreshNotifications(), 500);
+      setTimeout(() => refreshNotificationsRef.current(), 500);
     });
 
     // Event: przejazd oplacony
@@ -57,7 +78,7 @@ export function PusherProvider({ children }: { children: ReactNode }) {
       console.log("[Pusher] Otrzymano event offer-paid:", data);
 
       // Dodaj lokalnie (bez zapisu do bazy - juz zapisane przez nadawce)
-      addLocalNotification({
+      addLocalNotificationRef.current({
         type: "info",
         title: "Przejazd oplacony!",
         message: data.message || "Klient oplacil przejazd. Mozesz przystapic do realizacji.",
@@ -65,7 +86,7 @@ export function PusherProvider({ children }: { children: ReactNode }) {
       });
 
       // Odswierz powiadomienia z bazy (zsynchronizuje prawdziwe ID)
-      setTimeout(() => refreshNotifications(), 500);
+      setTimeout(() => refreshNotificationsRef.current(), 500);
     });
 
     // Status polaczenia
@@ -81,12 +102,15 @@ export function PusherProvider({ children }: { children: ReactNode }) {
 
     // Cleanup
     return () => {
-      console.log("[Pusher] Odlaczanie od kanalu driver-" + driverId);
-      pusher.unsubscribe(`driver-${driverId}`);
-      channelRef.current = null;
-      setIsConnected(false);
+      if (subscribedDriverIdRef.current) {
+        console.log("[Pusher] Odlaczanie od kanalu driver-" + subscribedDriverIdRef.current);
+        pusher.unsubscribe(`driver-${subscribedDriverIdRef.current}`);
+        channelRef.current = null;
+        subscribedDriverIdRef.current = null;
+        setIsConnected(false);
+      }
     };
-  }, [status, driverId, addLocalNotification, refreshNotifications]);
+  }, [status, driverId]); // Tylko status i driverId - funkcje sa w refach
 
   return (
     <PusherContext.Provider value={{ isConnected }}>
