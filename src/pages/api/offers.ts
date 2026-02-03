@@ -5,8 +5,10 @@ import {
   createOffer,
   getOffersByDriverWithRequests,
   hasDriverOfferedOnRequest,
+  getRequestById,
 } from "@/services";
 import { notifyNewOffer } from "@/lib/pusher";
+import { notificationsTable } from "@/lib/airtable";
 
 interface SessionUser {
   id?: string;
@@ -58,6 +60,10 @@ export default async function handler(
       const offer = await createOffer(requestId, driverId, price, message || "", vehicleId);
       console.log("[API/offers] Created offer:", offer);
 
+      // Pobierz request aby uzyskać userId pasażera
+      const request = await getRequestById(requestId);
+      const passengerId = request?.userId;
+
       // Wyślij powiadomienie przez Pusher
       try {
         await notifyNewOffer(requestId, {
@@ -72,6 +78,27 @@ export default async function handler(
       } catch (pusherError) {
         console.error("[API/offers] Pusher error:", pusherError);
         // Nie przerywamy - oferta została utworzona
+      }
+
+      // Zapisz powiadomienie do bazy danych (dla pasażera)
+      if (passengerId) {
+        try {
+          await notificationsTable.create({
+            userId: passengerId,
+            type: "new_offer",
+            title: "Nowa oferta!",
+            message: `${user.name || "Kierowca"} złożył ofertę: ${offer.price} PLN`,
+            link: `/request/${requestId}/offers`,
+            read: false,
+            createdAt: new Date().toISOString(),
+          });
+          console.log("[API/offers] Notification saved to database for user:", passengerId);
+        } catch (dbError) {
+          console.error("[API/offers] Error saving notification to database:", dbError);
+          // Nie przerywamy - oferta została utworzona
+        }
+      } else {
+        console.warn("[API/offers] Could not find passenger userId for request:", requestId);
       }
 
       return res.status(201).json(offer);
