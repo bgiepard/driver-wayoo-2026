@@ -2,7 +2,6 @@ import { createContext, useContext, useEffect, useRef, ReactNode, useState } fro
 import { useSession } from "next-auth/react";
 import { getPusherClient, type OfferAcceptedEvent, type OfferPaidEvent } from "@/lib/pusher-client";
 import { useNotifications } from "./NotificationsContext";
-import type { Channel } from "pusher-js";
 
 interface PusherContextType {
   isConnected: boolean;
@@ -13,15 +12,12 @@ const PusherContext = createContext<PusherContextType | null>(null);
 export function PusherProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const { addLocalNotification, refreshNotifications } = useNotifications();
-  const channelRef = useRef<Channel | null>(null);
-  const subscribedDriverIdRef = useRef<string | null>(null);
+  const subscribedChannelRef = useRef<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
-  // Przechowuj funkcje w refach aby uniknac problemow z zaleznosciami
   const addLocalNotificationRef = useRef(addLocalNotification);
   const refreshNotificationsRef = useRef(refreshNotifications);
 
-  // Aktualizuj refy gdy funkcje sie zmienia
   useEffect(() => {
     addLocalNotificationRef.current = addLocalNotification;
     refreshNotificationsRef.current = refreshNotifications;
@@ -30,87 +26,67 @@ export function PusherProvider({ children }: { children: ReactNode }) {
   const driverId = (session?.user as any)?.id;
 
   useEffect(() => {
-    // Wyczysc poprzednia subskrypcje jesli driverId sie zmienil
-    if (subscribedDriverIdRef.current && subscribedDriverIdRef.current !== driverId) {
-      const pusher = getPusherClient();
-      pusher.unsubscribe(`driver-${subscribedDriverIdRef.current}`);
-      channelRef.current = null;
-      subscribedDriverIdRef.current = null;
-      setIsConnected(false);
-    }
-
     if (status !== "authenticated" || !driverId) {
+      if (subscribedChannelRef.current) {
+        const pusher = getPusherClient();
+        if (pusher) {
+          pusher.unsubscribe(subscribedChannelRef.current);
+        }
+        subscribedChannelRef.current = null;
+        setIsConnected(false);
+      }
       return;
     }
 
-    // Juz subskrybowany na ten kanal
-    if (subscribedDriverIdRef.current === driverId) {
-      return;
+    const channelName = `driver-${driverId}`;
+
+    if (subscribedChannelRef.current === channelName) return;
+
+    if (subscribedChannelRef.current) {
+      const pusher = getPusherClient();
+      if (pusher) {
+        pusher.unsubscribe(subscribedChannelRef.current);
+      }
     }
 
     const pusher = getPusherClient();
+    if (!pusher) return;
 
-    console.log("[Pusher] Subskrybuje kanal driver-" + driverId);
+    const channel = pusher.subscribe(channelName);
+    subscribedChannelRef.current = channelName;
 
-    // Subskrybuj kanal kierowcy
-    const channel = pusher.subscribe(`driver-${driverId}`);
-    channelRef.current = channel;
-    subscribedDriverIdRef.current = driverId;
-
-    // Event: oferta zaakceptowana
     channel.bind("offer-accepted", (data: OfferAcceptedEvent) => {
-      console.log("[Pusher] Otrzymano event offer-accepted:", data);
-
-      // Dodaj lokalnie (bez zapisu do bazy - juz zapisane przez nadawce)
       addLocalNotificationRef.current({
         type: "offer_accepted",
         title: "Oferta zaakceptowana!",
         message: data.message || "Twoja oferta zostala zaakceptowana przez klienta.",
         link: "/my-offers",
       });
-
-      // Odswierz powiadomienia z bazy (zsynchronizuje prawdziwe ID)
       setTimeout(() => refreshNotificationsRef.current(), 500);
     });
 
-    // Event: przejazd oplacony
     channel.bind("offer-paid", (data: OfferPaidEvent) => {
-      console.log("[Pusher] Otrzymano event offer-paid:", data);
-
-      // Dodaj lokalnie (bez zapisu do bazy - juz zapisane przez nadawce)
       addLocalNotificationRef.current({
         type: "info",
         title: "Przejazd oplacony!",
         message: data.message || "Klient oplacil przejazd. Mozesz przystapic do realizacji.",
         link: "/my-offers",
       });
-
-      // Odswierz powiadomienia z bazy (zsynchronizuje prawdziwe ID)
       setTimeout(() => refreshNotificationsRef.current(), 500);
     });
 
-    // Status polaczenia
     channel.bind("pusher:subscription_succeeded", () => {
-      console.log("[Pusher] Polaczono z kanalem driver-" + driverId);
       setIsConnected(true);
     });
 
-    channel.bind("pusher:subscription_error", (error: any) => {
-      console.error("[Pusher] Blad subskrypcji:", error);
-      setIsConnected(false);
-    });
-
-    // Cleanup
     return () => {
-      if (subscribedDriverIdRef.current) {
-        console.log("[Pusher] Odlaczanie od kanalu driver-" + subscribedDriverIdRef.current);
-        pusher.unsubscribe(`driver-${subscribedDriverIdRef.current}`);
-        channelRef.current = null;
-        subscribedDriverIdRef.current = null;
+      if (subscribedChannelRef.current) {
+        pusher.unsubscribe(subscribedChannelRef.current);
+        subscribedChannelRef.current = null;
         setIsConnected(false);
       }
     };
-  }, [status, driverId]); // Tylko status i driverId - funkcje sa w refach
+  }, [status, driverId]);
 
   return (
     <PusherContext.Provider value={{ isConnected }}>
