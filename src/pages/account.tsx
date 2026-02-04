@@ -6,20 +6,14 @@ export default function Account() {
   const router = useRouter();
 
   if (status === "loading") {
-    return (
-      <main className="py-8 px-4 max-w-[1250px] mx-auto">
-        <p className="text-gray-500">Ladowanie...</p>
-      </main>
-    );
+    return <p className="text-gray-500">Ladowanie...</p>;
   }
 
   if (!session) {
     return (
-      <main className="py-8 px-4 max-w-[1250px] mx-auto">
-        <div className="bg-white rounded-lg p-12 text-center text-gray-500">
-          Zaloguj sie, aby zobaczyc swoje konto.
-        </div>
-      </main>
+      <div className="bg-white rounded-lg p-12 text-center text-gray-500">
+        Zaloguj sie, aby zobaczyc swoje konto.
+      </div>
     );
   }
 
@@ -29,7 +23,7 @@ export default function Account() {
   };
 
   return (
-    <main className="py-8 px-4 max-w-[1250px] mx-auto">
+    <>
       <h1 className="text-2xl font-semibold mb-6">Moje konto</h1>
 
       <div className="bg-white rounded-lg p-6 mb-4">
@@ -52,6 +46,6 @@ export default function Account() {
       >
         Wyloguj sie
       </button>
-    </main>
+    </>
   );
 }

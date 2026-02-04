@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { OfferWithRequest, OfferStatus } from "@/models";
 import { getRouteDisplay } from "@/models";
+import OfferDetailsModal from "@/components/OfferDetailsModal";
 
 const getStatusText = (status: OfferStatus) => {
   switch (status) {
@@ -42,6 +43,7 @@ export default function MyOffers() {
   const { data: session, status } = useSession();
   const [offers, setOffers] = useState<OfferWithRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedOffer, setSelectedOffer] = useState<OfferWithRequest | null>(null);
 
   useEffect(() => {
     if (session) {
@@ -64,20 +66,14 @@ export default function MyOffers() {
   };
 
   if (status === "loading" || loading) {
-    return (
-      <main className="py-8 px-4 max-w-[1250px] mx-auto">
-        <p className="text-gray-500">Ladowanie...</p>
-      </main>
-    );
+    return <p className="text-gray-500">Ladowanie...</p>;
   }
 
   if (!session) {
     return (
-      <main className="py-8 px-4 max-w-[1250px] mx-auto">
-        <div className="bg-white rounded-lg p-12 text-center text-gray-500">
-          Zaloguj sie, aby zobaczyc swoje oferty.
-        </div>
-      </main>
+      <div className="bg-white rounded-lg p-12 text-center text-gray-500">
+        Zaloguj sie, aby zobaczyc swoje oferty.
+      </div>
     );
   }
 
@@ -89,7 +85,7 @@ export default function MyOffers() {
   const canceledOffers = offers.filter((o) => o.status === "canceled");
 
   return (
-    <main className="py-8 px-4 max-w-[1250px] mx-auto">
+    <>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-2">Moje oferty</h1>
         <p className="text-gray-500">
@@ -101,7 +97,7 @@ export default function MyOffers() {
         <div className="bg-white rounded-lg p-12 text-center">
           <p className="text-gray-500 mb-4">Nie masz jeszcze zadnych zlozonych ofert.</p>
           <Link
-            href="/"
+            href="/zlecenia"
             className="text-green-600 hover:text-green-700 font-medium"
           >
             Przejdz do dostepnych zlecen →
@@ -117,7 +113,7 @@ export default function MyOffers() {
               </h2>
               <div className="flex flex-col gap-3">
                 {paidOffers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
+                  <OfferCard key={offer.id} offer={offer} onClick={setSelectedOffer} />
                 ))}
               </div>
             </div>
@@ -131,7 +127,7 @@ export default function MyOffers() {
               </h2>
               <div className="flex flex-col gap-3">
                 {acceptedOffers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
+                  <OfferCard key={offer.id} offer={offer} onClick={setSelectedOffer} />
                 ))}
               </div>
             </div>
@@ -145,7 +141,7 @@ export default function MyOffers() {
               </h2>
               <div className="flex flex-col gap-3">
                 {pendingOffers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
+                  <OfferCard key={offer.id} offer={offer} onClick={setSelectedOffer} />
                 ))}
               </div>
             </div>
@@ -159,7 +155,7 @@ export default function MyOffers() {
               </h2>
               <div className="flex flex-col gap-3">
                 {rejectedOffers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
+                  <OfferCard key={offer.id} offer={offer} onClick={setSelectedOffer} />
                 ))}
               </div>
             </div>
@@ -173,20 +169,37 @@ export default function MyOffers() {
               </h2>
               <div className="flex flex-col gap-3">
                 {canceledOffers.map((offer) => (
-                  <OfferCard key={offer.id} offer={offer} />
+                  <OfferCard key={offer.id} offer={offer} onClick={setSelectedOffer} />
                 ))}
               </div>
             </div>
           )}
         </div>
       )}
-    </main>
+
+      {/* Modal szczegółów oferty */}
+      {selectedOffer && (
+        <OfferDetailsModal
+          offer={selectedOffer}
+          onClose={() => setSelectedOffer(null)}
+        />
+      )}
+    </>
   );
 }
 
-function OfferCard({ offer }: { offer: OfferWithRequest }) {
+function OfferCard({
+  offer,
+  onClick,
+}: {
+  offer: OfferWithRequest;
+  onClick: (offer: OfferWithRequest) => void;
+}) {
   return (
-    <div className="bg-white rounded-lg p-5">
+    <div
+      className="bg-white rounded-lg p-5 cursor-pointer hover:shadow-md transition-shadow"
+      onClick={() => onClick(offer)}
+    >
       <div className="flex justify-between items-start">
         <div className="flex-1">
           {offer.request ? (

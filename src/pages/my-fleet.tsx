@@ -279,26 +279,20 @@ export default function MyFleet() {
   };
 
   if (status === "loading" || loading) {
-    return (
-      <main className="py-8 px-4 max-w-[1250px] mx-auto">
-        <p className="text-gray-500">Ladowanie...</p>
-      </main>
-    );
+    return <p className="text-gray-500">Ladowanie...</p>;
   }
 
   if (!session) {
     return (
-      <main className="py-8 px-4 max-w-[1250px] mx-auto">
-        <div className="bg-white rounded-lg p-12 text-center">
-          <h1 className="text-2xl font-semibold mb-4">Moja flota</h1>
-          <p className="text-gray-500">Zaloguj sie, aby zarzadzac swoimi pojazdami.</p>
-        </div>
-      </main>
+      <div className="bg-white rounded-lg p-12 text-center">
+        <h1 className="text-2xl font-semibold mb-4">Moja flota</h1>
+        <p className="text-gray-500">Zaloguj sie, aby zarzadzac swoimi pojazdami.</p>
+      </div>
     );
   }
 
   return (
-    <main className="py-8 px-4 max-w-[1250px] mx-auto">
+    <>
       {/* Header */}
       <div className="flex justify-between items-start mb-6">
         <div>
@@ -836,6 +830,6 @@ export default function MyFleet() {
           )}
         </div>
       )}
-    </main>
+    </>
   );
 }
