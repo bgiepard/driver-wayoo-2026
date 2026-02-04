@@ -50,7 +50,7 @@ export default function DashboardPage() {
   const allPaidOffers = offers.filter((o) => o.status === "paid");
 
   return (
-    <>
+    <div className="max-w-[1200px]">
       <div className="mb-6">
         <h1 className="text-2xl font-semibold mb-2">Dashboard</h1>
         <p className="text-gray-500">
@@ -97,7 +97,7 @@ export default function DashboardPage() {
           onClose={() => setSelectedOffer(null)}
         />
       )}
-    </>
+    </div>
   );
 }
 
@@ -216,11 +216,10 @@ function CalendarView({
   });
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {months.map(({ month, year }) => (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {months.map(({ month, year }) => (
+        <div key={`${year}-${month}`} className="bg-white rounded-lg border border-gray-200 p-4">
           <MonthCalendar
-            key={`${year}-${month}`}
             month={month}
             year={year}
             offerDates={offerDates}
@@ -229,8 +228,8 @@ function CalendarView({
             setActiveDay={setActiveDay}
             onOfferClick={onOfferClick}
           />
-        ))}
-      </div>
+        </div>
+      ))}
     </div>
   );
 }
