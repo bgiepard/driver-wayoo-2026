@@ -5,7 +5,17 @@ import { useRouter } from "next/router";
 import LoginModal from "./LoginModal";
 import { useNotifications } from "@/context/NotificationsContext";
 
-const navItems = [
+interface NavItem {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  badge?: boolean;
+  disabled?: boolean;
+  comingSoon?: boolean;
+  isSubItem?: boolean;
+}
+
+const navItems: NavItem[] = [
   {
     href: "/",
     label: "Dashboard",
@@ -25,6 +35,31 @@ const navItems = [
     ),
   },
   {
+    href: "#",
+    label: "Automatyczna wycena",
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+      </svg>
+    ),
+    disabled: true,
+    comingSoon: true,
+    isSubItem: true,
+  },
+  {
+    href: "#",
+    label: "Promowanie",
+    icon: (
+      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+      </svg>
+    ),
+    disabled: true,
+    comingSoon: true,
+    isSubItem: true,
+  },
+  {
     href: "/my-offers",
     label: "Moje oferty",
     icon: (
@@ -41,6 +76,28 @@ const navItems = [
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
       </svg>
     ),
+  },
+  {
+    href: "#",
+    label: "Statystyki",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+    disabled: true,
+    comingSoon: true,
+  },
+  {
+    href: "#",
+    label: "ESG",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    disabled: true,
+    comingSoon: true,
   },
   {
     href: "/notifications",
@@ -72,7 +129,7 @@ export default function Sidebar() {
   if (!session) {
     return (
       <>
-        <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
+        <aside className="w-96 bg-white border-r border-gray-200 min-h-screen flex flex-col">
           <div className="p-6 border-b border-gray-200">
             <span className="text-xl font-semibold text-green-600">wayoo kierowca</span>
           </div>
@@ -91,7 +148,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
+    <aside className="w-96 bg-white border-r border-gray-200 min-h-screen flex flex-col">
       <div className="p-6 border-b border-gray-200">
         <Link href="/" className="text-xl font-semibold text-green-600">
           wayoo kierowca
@@ -102,6 +159,29 @@ export default function Sidebar() {
         <ul className="flex flex-col gap-1">
           {navItems.map((item) => {
             const isActive = router.pathname === item.href;
+
+            if (item.disabled) {
+              return (
+                <li key={item.label}>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm cursor-not-allowed ${
+                      item.isSubItem ? "ml-6 py-2" : ""
+                    }`}
+                  >
+                    <span className="text-gray-300">
+                      {item.icon}
+                    </span>
+                    <span className="text-gray-400">{item.label}</span>
+                    {item.comingSoon && (
+                      <span className="ml-auto text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">
+                        wkrotce
+                      </span>
+                    )}
+                  </div>
+                </li>
+              );
+            }
+
             return (
               <li key={item.href}>
                 <Link
