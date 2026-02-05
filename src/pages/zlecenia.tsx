@@ -1,9 +1,10 @@
 import { useSession } from "next-auth/react";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import type { RequestData, Vehicle, Route } from "@/models";
 import { optionLabels, getRouteDisplay, vehicleTypeLabels, parseRoute } from "@/models";
 import AllRoutesMap from "@/components/AllRoutesMap";
+import LocationFilter, { calculateDistance } from "@/components/LocationFilter";
 
 export default function ZleceniaPage() {
   const { data: session, status } = useSession();
@@ -17,6 +18,7 @@ export default function ZleceniaPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const isSubmittingRef = useRef(false);
+  const [locationFilter, setLocationFilter] = useState<{ lat: number; lng: number; radius: number } | null>(null);
 
   useEffect(() => {
     if (session) {
@@ -105,22 +107,53 @@ export default function ZleceniaPage() {
     }
   };
 
+  const formatTimeAgo = (dateStr: string) => {
+    const now = new Date();
+    const date = new Date(dateStr);
+    const diffMs = now.getTime() - date.getTime();
+    const diffMin = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMin < 1) return "przed chwila";
+    if (diffMin < 60) return `${diffMin} min temu`;
+    if (diffHours < 24) return `${diffHours} godz. temu`;
+    if (diffDays === 1) return "wczoraj";
+    if (diffDays < 7) return `${diffDays} dni temu`;
+    return date.toLocaleDateString("pl-PL");
+  };
+
+  const handleLocationFilterChange = useCallback((filter: { lat: number; lng: number; radius: number } | null) => {
+    setLocationFilter(filter);
+  }, []);
+
+  const filteredRequests = useMemo(() => {
+    if (!locationFilter) return requests;
+
+    return requests.filter((request) => {
+      const route = parseRoute(request.route);
+      if (!route?.origin?.lat || !route?.origin?.lng) return true;
+
+      const distance = calculateDistance(
+        locationFilter.lat,
+        locationFilter.lng,
+        route.origin.lat,
+        route.origin.lng
+      );
+
+      return distance <= locationFilter.radius;
+    });
+  }, [requests, locationFilter]);
+
   const routesForMap = useMemo(() => {
-    const allRoutes = requests
+    return filteredRequests
       .map((request) => {
         const route = parseRoute(request.route);
         if (!route) return null;
         return { id: request.id, route };
       })
       .filter((r): r is { id: string; route: Route } => r !== null);
-
-    // If a request is selected, show only that route
-    if (selectedRequest) {
-      return allRoutes.filter((r) => r.id === selectedRequest);
-    }
-
-    return allRoutes;
-  }, [requests, selectedRequest]);
+  }, [filteredRequests]);
 
   const handleRouteClick = (requestId: string) => {
     const element = document.getElementById(`request-${requestId}`);
@@ -152,15 +185,19 @@ export default function ZleceniaPage() {
         </p>
       </div>
 
-      {requests.length === 0 ? (
+      <LocationFilter onFilterChange={handleLocationFilterChange} />
+
+      {filteredRequests.length === 0 ? (
         <div className="bg-white rounded-lg p-12 text-center text-gray-500">
-          Brak dostepnych zlecen. Zlozyles juz oferty na wszystkie aktywne zlecenia lub nie ma nowych.
+          {requests.length === 0
+            ? "Brak dostepnych zlecen. Zlozyles juz oferty na wszystkie aktywne zlecenia lub nie ma nowych."
+            : "Brak zlecen w wybranym obszarze. Zwieksz promien lub wyczysc filtr, aby zobaczyc wszystkie zlecenia."}
         </div>
       ) : (
         <div className="flex gap-4">
           {/* Left column - list of requests */}
           <div className="w-[40%] flex-shrink-0 flex flex-col gap-3 max-h-[calc(100vh-150px)] overflow-y-auto">
-            {requests.map((request) => (
+            {filteredRequests.map((request) => (
               <div
                 key={request.id}
                 id={`request-${request.id}`}
@@ -196,11 +233,16 @@ export default function ZleceniaPage() {
                       Opcje: {parseOptions(request.options)}
                     </p>
                   </div>
-                  {selectedRequest === request.id && (
-                    <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
-                      Wybrane
+                  <div className="flex flex-col items-end gap-1">
+                    <span className="text-xs text-gray-400">
+                      {formatTimeAgo(request.createdAt)}
                     </span>
-                  )}
+                    {selectedRequest === request.id && (
+                      <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-medium">
+                        Wybrane
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {selectedRequest === request.id && (
@@ -310,9 +352,9 @@ export default function ZleceniaPage() {
           <div className="w-[60%]">
             <div className="bg-white rounded-lg p-4 sticky top-4">
               <AllRoutesMap
-                key={selectedRequest || "all"}
                 routes={routesForMap}
                 height="calc(100vh - 200px)"
+                selectedRouteId={selectedRequest}
                 onRouteClick={handleRouteClick}
               />
             </div>

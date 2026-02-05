@@ -5,12 +5,15 @@
 // --------------------------------------------
 // DRIVER - Tabela Drivers
 // --------------------------------------------
+export type DriverAuthProvider = 'email' | 'google';
+
 export interface Driver {
   id: string;
   email: string;
   name: string;
   password?: string;
   phone?: string;
+  provider?: DriverAuthProvider;
 }
 
 export interface CreateDriverData {
@@ -58,6 +61,7 @@ export interface RequestData {
   children: number;
   options: string;
   status: RequestStatus;
+  createdAt: string;
 }
 
 // Helper do parsowania trasy

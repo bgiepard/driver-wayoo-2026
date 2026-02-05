@@ -1,15 +1,16 @@
 import type { FieldSet, Record as AirtableRecord } from "airtable";
 import bcrypt from "bcryptjs";
 import { driversTable } from "@/lib/airtable";
-import type { Driver, CreateDriverData } from "@/models";
+import type { Driver, CreateDriverData, DriverAuthProvider } from "@/models";
 
 function mapRecordToDriver(record: AirtableRecord<FieldSet>): Driver {
   return {
     id: record.id,
     email: record.get("email") as string,
     name: record.get("name") as string,
-    password: record.get("password") as string,
+    password: record.get("password") as string | undefined,
     phone: record.get("phone") as string | undefined,
+    provider: (record.get("provider") as DriverAuthProvider) || "email",
   };
 }
 
@@ -52,4 +53,25 @@ export async function verifyPassword(
   hashedPassword: string
 ): Promise<boolean> {
   return bcrypt.compare(plainPassword, hashedPassword);
+}
+
+export async function findOrCreateDriverByOAuth(data: {
+  email: string;
+  name: string;
+  provider: string;
+}): Promise<Driver> {
+  const existingDriver = await findDriverByEmail(data.email);
+
+  if (existingDriver) {
+    return existingDriver;
+  }
+
+  const record = await driversTable.create({
+    email: data.email,
+    name: data.name,
+    phone: "",
+    provider: data.provider,
+  });
+
+  return mapRecordToDriver(record);
 }

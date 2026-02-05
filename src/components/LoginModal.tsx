@@ -1,5 +1,6 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
+import { GoogleIcon } from "./icons";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   if (!isOpen) return null;
 
@@ -22,6 +24,12 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setName("");
     setPhone("");
     setError("");
+  };
+
+  const handleGoogleLogin = async () => {
+    setIsGoogleLoading(true);
+    setError("");
+    await signIn("google", { callbackUrl: "/" });
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -95,6 +103,25 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             {error}
           </div>
         )}
+
+        <button
+          type="button"
+          onClick={handleGoogleLogin}
+          disabled={isGoogleLoading}
+          className="w-full flex items-center justify-center gap-3 border border-gray-200 rounded-lg p-3 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 mb-4"
+        >
+          <GoogleIcon />
+          {isGoogleLoading ? "Przekierowywanie..." : "Kontynuuj z Google"}
+        </button>
+
+        <div className="relative mb-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-gray-200" />
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-white px-2 text-gray-500">lub</span>
+          </div>
+        </div>
 
         <form
           onSubmit={isRegister ? handleRegister : handleLogin}

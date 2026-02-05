@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import type { Route } from "@/models";
 
 interface RouteWithId {
@@ -9,207 +9,286 @@ interface RouteWithId {
 interface AllRoutesMapProps {
   routes: RouteWithId[];
   height?: string;
+  selectedRouteId?: string | null;
   onRouteClick?: (id: string) => void;
 }
 
-const ROUTE_COLORS = [
-  "#16a34a", // green
-  "#2563eb", // blue
-  "#dc2626", // red
-  "#ca8a04", // yellow
-  "#9333ea", // purple
-  "#0891b2", // cyan
-  "#ea580c", // orange
-  "#db2777", // pink
+// Jasny styl mapy
+const MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { featureType: "all", elementType: "geometry", stylers: [{ color: "#f8f9fa" }] },
+  { featureType: "all", elementType: "labels.text.fill", stylers: [{ color: "#6c757d" }] },
+  { featureType: "all", elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
+  { featureType: "administrative.country", elementType: "geometry.stroke", stylers: [{ color: "#6c757d" }, { weight: 2 }] },
+  { featureType: "administrative.province", elementType: "geometry.stroke", stylers: [{ color: "#adb5bd" }, { weight: 1.5 }] },
+  { featureType: "administrative.locality", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
+  { featureType: "administrative.land_parcel", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e9ecef" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#e9ecef" }] },
+  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#cfe2f3" }] },
+  { featureType: "water", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#f1f3f4" }] },
 ];
 
-export default function AllRoutesMap({ routes, height = "400px", onRouteClick }: AllRoutesMapProps) {
+export default function AllRoutesMap({ routes, height = "400px", selectedRouteId, onRouteClick }: AllRoutesMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
+  const [loadingRoute, setLoadingRoute] = useState(false);
   const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const routeElementsRef = useRef<Map<string, { renderer: google.maps.DirectionsRenderer; markers: google.maps.Marker[] }>>(new Map());
+  const markersRef = useRef<Map<string, google.maps.Marker>>(new Map());
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const onRouteClickRef = useRef(onRouteClick);
+  const prevRoutesRef = useRef<string>("");
 
-  // Keep the ref updated
   useEffect(() => {
     onRouteClickRef.current = onRouteClick;
   }, [onRouteClick]);
 
+  // Initialize map only once
   useEffect(() => {
-    if (routes.length === 0) {
-      setIsLoading(false);
-      return;
-    }
+    if (mapInstanceRef.current) return;
 
     const initMap = () => {
       if (!window.google?.maps || !mapRef.current) {
         return false;
       }
 
-      // Clear previous renderers and markers
-      routeElementsRef.current.forEach((elements) => {
-        elements.renderer.setMap(null);
-        elements.markers.forEach((marker) => marker.setMap(null));
-      });
-      routeElementsRef.current.clear();
-
-      // Always create a new map instance
       mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
         zoom: 6,
         center: { lat: 52.0, lng: 19.0 },
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
+        styles: MAP_STYLES,
       });
 
+      setMapReady(true);
       return true;
     };
 
-    const calculateRoutes = async () => {
-      if (!mapInstanceRef.current) return;
-
-      const directionsService = new window.google.maps.DirectionsService();
-      const bounds = new window.google.maps.LatLngBounds();
-      let loadedCount = 0;
-
-      for (let i = 0; i < routes.length; i++) {
-        const { id, route } = routes[i];
-        const color = ROUTE_COLORS[i % ROUTE_COLORS.length];
-
-        if (!route.origin.lat || !route.destination.lat) continue;
-
-        // Create direction renderer for this route
-        const directionsRenderer = new window.google.maps.DirectionsRenderer({
-          suppressMarkers: true,
-          polylineOptions: {
-            strokeColor: color,
-            strokeWeight: 4,
-            strokeOpacity: 0.8,
-          },
-          preserveViewport: true,
-        });
-
-        directionsRenderer.setMap(mapInstanceRef.current);
-        const routeMarkers: google.maps.Marker[] = [];
-
-        // Build waypoints
-        const waypoints: google.maps.DirectionsWaypoint[] = route.waypoints
-          .filter((wp) => wp.lat && wp.lng)
-          .map((wp) => ({
-            location: new google.maps.LatLng(wp.lat, wp.lng),
-            stopover: true,
-          }));
-
-        const request: google.maps.DirectionsRequest = {
-          origin: new google.maps.LatLng(route.origin.lat, route.origin.lng),
-          destination: new google.maps.LatLng(route.destination.lat, route.destination.lng),
-          waypoints: waypoints,
-          travelMode: google.maps.TravelMode.DRIVING,
-          region: "pl",
-        };
-
-        try {
-          const result = await new Promise<google.maps.DirectionsResult | null>((resolve) => {
-            directionsService.route(request, (result, status) => {
-              if (status === google.maps.DirectionsStatus.OK && result) {
-                resolve(result);
-              } else {
-                resolve(null);
-              }
-            });
-          });
-
-          if (result) {
-            directionsRenderer.setDirections(result);
-
-            // Extend bounds
-            const legs = result.routes[0]?.legs || [];
-            legs.forEach((leg) => {
-              if (leg.start_location) bounds.extend(leg.start_location);
-              if (leg.end_location) bounds.extend(leg.end_location);
-            });
-
-            // Add origin marker
-            const originMarker = new window.google.maps.Marker({
-              position: { lat: route.origin.lat, lng: route.origin.lng },
-              map: mapInstanceRef.current,
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: color,
-                fillOpacity: 1,
-                strokeColor: "#ffffff",
-                strokeWeight: 2,
-              },
-              title: route.origin.address,
-            });
-
-            originMarker.addListener("click", () => onRouteClickRef.current?.(id));
-            routeMarkers.push(originMarker);
-
-            // Add destination marker
-            const destMarker = new window.google.maps.Marker({
-              position: { lat: route.destination.lat, lng: route.destination.lng },
-              map: mapInstanceRef.current,
-              icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 8,
-                fillColor: color,
-                fillOpacity: 1,
-                strokeColor: "#ffffff",
-                strokeWeight: 2,
-              },
-              title: route.destination.address,
-            });
-
-            destMarker.addListener("click", () => onRouteClickRef.current?.(id));
-            routeMarkers.push(destMarker);
-
-            // Store route elements for visibility control
-            routeElementsRef.current.set(id, { renderer: directionsRenderer, markers: routeMarkers });
-          }
-
-          loadedCount++;
-          if (loadedCount === routes.length) {
-            // Fit map to show all routes
-            if (!bounds.isEmpty()) {
-              mapInstanceRef.current?.fitBounds(bounds, 50);
-            }
-            setIsLoading(false);
-          }
-        } catch {
-          loadedCount++;
-          if (loadedCount === routes.length) {
-            setIsLoading(false);
-          }
-        }
-      }
-
-      if (routes.length === 0) {
-        setIsLoading(false);
-      }
-    };
-
-    setIsLoading(true);
-
-    const checkAndInit = () => {
-      if (initMap()) {
-        calculateRoutes();
-        return true;
-      }
-      return false;
-    };
-
-    if (!checkAndInit()) {
+    if (!initMap()) {
       const interval = setInterval(() => {
-        if (checkAndInit()) {
+        if (initMap()) {
           clearInterval(interval);
         }
       }, 100);
-
       return () => clearInterval(interval);
     }
-  }, [routes]);
+  }, []);
+
+  // Clear all markers
+  const clearMarkers = useCallback(() => {
+    markersRef.current.forEach((marker) => marker.setMap(null));
+    markersRef.current.clear();
+  }, []);
+
+  // Clear directions
+  const clearDirections = useCallback(() => {
+    if (directionsRendererRef.current) {
+      directionsRendererRef.current.setMap(null);
+      directionsRendererRef.current = null;
+    }
+  }, []);
+
+  // Update markers when routes change
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current) return;
+
+    const routeIds = routes.map(r => r.id).sort().join(',');
+    if (routeIds === prevRoutesRef.current) return;
+    prevRoutesRef.current = routeIds;
+
+    clearMarkers();
+    clearDirections();
+
+    if (routes.length === 0) return;
+
+    const bounds = new window.google.maps.LatLngBounds();
+
+    routes.forEach((item) => {
+      const { id, route } = item;
+      if (!route.origin.lat || !route.origin.lng) return;
+
+      const isSelected = id === selectedRouteId;
+
+      const marker = new window.google.maps.Marker({
+        position: { lat: route.origin.lat, lng: route.origin.lng },
+        map: mapInstanceRef.current,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: isSelected ? 12 : 8,
+          fillColor: isSelected ? "#16a34a" : "#2563eb",
+          fillOpacity: 1,
+          strokeColor: "#ffffff",
+          strokeWeight: 2,
+        },
+        title: route.origin.address,
+      });
+
+      marker.addListener("click", () => {
+        onRouteClickRef.current?.(id);
+      });
+
+      markersRef.current.set(id, marker);
+      bounds.extend({ lat: route.origin.lat, lng: route.origin.lng });
+    });
+
+    if (!bounds.isEmpty() && routes.length > 1) {
+      mapInstanceRef.current.fitBounds(bounds, 50);
+    } else if (routes.length === 1) {
+      const route = routes[0].route;
+      mapInstanceRef.current.setCenter({ lat: route.origin.lat, lng: route.origin.lng });
+      mapInstanceRef.current.setZoom(10);
+    }
+  }, [routes, mapReady, clearMarkers, clearDirections, selectedRouteId]);
+
+  // Update marker styles when selection changes
+  useEffect(() => {
+    if (!mapReady) return;
+
+    markersRef.current.forEach((marker, id) => {
+      // Skip route markers (origin, dest, waypoints)
+      if (id.includes('-origin') || id.includes('-dest') || id.includes('-wp-')) return;
+
+      const isSelected = id === selectedRouteId;
+      marker.setIcon({
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: isSelected ? 10 : 8,
+        fillColor: "#2563eb",
+        fillOpacity: isSelected ? 1 : 0.7,
+        strokeColor: "#ffffff",
+        strokeWeight: 2,
+      });
+    });
+  }, [selectedRouteId, mapReady]);
+
+  // Create labeled marker icon (S, K, or number)
+  const createLabeledIcon = (label: string, isEndpoint: boolean) => {
+    const size = isEndpoint ? 28 : 22;
+    const fontSize = isEndpoint ? 12 : 10;
+    const fillColor = isEndpoint ? "#2563eb" : "white";
+    const textColor = isEndpoint ? "white" : "#2563eb";
+
+    const svg = `
+      <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${size/2}" cy="${size/2}" r="${size/2 - 2}" fill="${fillColor}" stroke="#2563eb" stroke-width="2"/>
+        <text x="${size/2}" y="${size/2 + fontSize/3}" text-anchor="middle" font-family="Arial, sans-serif" font-size="${fontSize}" font-weight="bold" fill="${textColor}">${label}</text>
+      </svg>
+    `;
+
+    return {
+      url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize: new google.maps.Size(size, size),
+      anchor: new google.maps.Point(size/2, size/2),
+    };
+  };
+
+  // Show route when selected
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current) return;
+
+    clearDirections();
+
+    // Clean up route markers
+    ['origin', 'dest'].forEach(suffix => {
+      const key = `${selectedRouteId}-${suffix}`;
+      const marker = markersRef.current.get(key);
+      if (marker) {
+        marker.setMap(null);
+        markersRef.current.delete(key);
+      }
+    });
+    // Clean up waypoint markers
+    markersRef.current.forEach((marker, key) => {
+      if (key.includes('-wp-')) {
+        marker.setMap(null);
+        markersRef.current.delete(key);
+      }
+    });
+
+    if (!selectedRouteId) return;
+
+    const selectedRoute = routes.find(r => r.id === selectedRouteId);
+    if (!selectedRoute) return;
+
+    const { route } = selectedRoute;
+    if (!route.origin.lat || !route.destination.lat) return;
+
+    setLoadingRoute(true);
+
+    const directionsService = new window.google.maps.DirectionsService();
+    const directionsRenderer = new window.google.maps.DirectionsRenderer({
+      suppressMarkers: true,
+      preserveViewport: true,
+      polylineOptions: {
+        strokeColor: "#2563eb",
+        strokeWeight: 5,
+        strokeOpacity: 0.9,
+      },
+    });
+
+    directionsRenderer.setMap(mapInstanceRef.current);
+    directionsRendererRef.current = directionsRenderer;
+
+    const waypoints: google.maps.DirectionsWaypoint[] = route.waypoints
+      .filter((wp) => wp.lat && wp.lng)
+      .map((wp) => ({
+        location: new google.maps.LatLng(wp.lat, wp.lng),
+        stopover: true,
+      }));
+
+    const request: google.maps.DirectionsRequest = {
+      origin: new google.maps.LatLng(route.origin.lat, route.origin.lng),
+      destination: new google.maps.LatLng(route.destination.lat, route.destination.lng),
+      waypoints,
+      travelMode: google.maps.TravelMode.DRIVING,
+      region: "pl",
+    };
+
+    directionsService.route(request, (result, status) => {
+      setLoadingRoute(false);
+      if (status === google.maps.DirectionsStatus.OK && result) {
+        directionsRenderer.setDirections(result);
+
+        // Add start marker (S)
+        const startMarker = new window.google.maps.Marker({
+          position: { lat: route.origin.lat, lng: route.origin.lng },
+          map: mapInstanceRef.current,
+          icon: createLabeledIcon("S", true),
+          title: route.origin.address,
+          zIndex: 100,
+        });
+        markersRef.current.set(`${selectedRouteId}-origin`, startMarker);
+
+        // Add destination marker (K)
+        const destMarker = new window.google.maps.Marker({
+          position: { lat: route.destination.lat, lng: route.destination.lng },
+          map: mapInstanceRef.current,
+          icon: createLabeledIcon("K", true),
+          title: route.destination.address,
+          zIndex: 100,
+        });
+        markersRef.current.set(`${selectedRouteId}-dest`, destMarker);
+
+        // Add waypoint markers (numbered, empty background)
+        route.waypoints.forEach((wp, index) => {
+          if (!wp.lat || !wp.lng) return;
+          const wpMarker = new window.google.maps.Marker({
+            position: { lat: wp.lat, lng: wp.lng },
+            map: mapInstanceRef.current,
+            icon: createLabeledIcon(String(index + 1), false),
+            title: wp.address,
+            zIndex: 99,
+          });
+          markersRef.current.set(`${selectedRouteId}-wp-${index}`, wpMarker);
+        });
+      }
+    });
+
+  }, [selectedRouteId, routes, mapReady, clearDirections]);
 
   if (routes.length === 0) {
     return (
@@ -224,13 +303,11 @@ export default function AllRoutesMap({ routes, height = "400px", onRouteClick }:
 
   return (
     <div className="relative">
-      {isLoading && (
-        <div
-          className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center z-10"
-        >
-          <div className="flex flex-col items-center gap-2">
-            <div className="w-6 h-6 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-500 text-xs">Ladowanie mapy...</span>
+      {loadingRoute && (
+        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-md shadow-sm z-10">
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-gray-600">Ladowanie trasy...</span>
           </div>
         </div>
       )}
@@ -238,13 +315,15 @@ export default function AllRoutesMap({ routes, height = "400px", onRouteClick }:
       <div
         ref={mapRef}
         className="w-full rounded-lg"
-        style={{ height, opacity: isLoading ? 0 : 1 }}
+        style={{ height }}
       />
 
-      {/* Legend */}
-      {!isLoading && routes.length > 1 && (
-        <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-md shadow-sm max-h-32 overflow-y-auto">
-          <p className="text-xs font-medium text-gray-700 mb-1">{routes.length} tras</p>
+      {routes.length > 0 && (
+        <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-md shadow-sm">
+          <p className="text-xs text-gray-600">
+            {routes.length} {routes.length === 1 ? "zlecenie" : routes.length < 5 ? "zlecenia" : "zlecen"}
+            {selectedRouteId && " • kliknij gdzie indziej aby schowac trase"}
+          </p>
         </div>
       )}
     </div>

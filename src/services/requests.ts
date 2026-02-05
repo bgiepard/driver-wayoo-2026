@@ -16,6 +16,7 @@ function mapRecordToRequest(record: AirtableRecord<FieldSet>): RequestData {
     children: record.get("children") as number,
     options: record.get("options") as string,
     status: (record.get("status") as RequestStatus) || "published",
+    createdAt: (record.get("Created") as string) || new Date().toISOString(),
   };
 }
 
@@ -23,6 +24,7 @@ export async function getAvailableRequests(): Promise<RequestData[]> {
   const records = await requestsTable
     .select({
       filterByFormula: `{status} = 'published'`,
+      sort: [{ field: "Created", direction: "desc" }],
     })
     .all();
 
