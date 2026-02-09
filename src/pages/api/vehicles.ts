@@ -73,7 +73,7 @@ export default async function handler(
     try {
       const data: CreateVehicleData = req.body;
 
-      if (!data.name || !data.type || !data.brand || !data.model || !data.seats || !data.licensePlate) {
+      if (!data.brand || !data.model || !data.seats || !data.licensePlate) {
         return res.status(400).json({ error: "Brakuje wymaganych pol" });
       }
 

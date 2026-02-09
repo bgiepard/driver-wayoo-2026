@@ -2,6 +2,7 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import type { Vehicle, CreateVehicleData, VehicleType } from "@/models";
 import { vehicleTypeLabels } from "@/models";
+import { brandNames, getModelsForBrand } from "@/data/vehicleBrands";
 
 export default function MyFleet() {
   const { data: session, status } = useSession();
@@ -12,6 +13,9 @@ export default function MyFleet() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [showColorDropdown, setShowColorDropdown] = useState(false);
+  const [showBrandDropdown, setShowBrandDropdown] = useState(false);
+  const [showModelDropdown, setShowModelDropdown] = useState(false);
   const [lightbox, setLightbox] = useState<{ photos: string[]; index: number } | null>(null);
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -478,50 +482,64 @@ export default function MyFleet() {
               <div>
                 <h3 className="text-sm font-medium text-slate-700 mb-3">Podstawowe informacje</h3>
                 <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="block text-sm text-slate-600 mb-1">Nazwa pojazdu *</label>
-                    <input
-                      type="text"
-                      value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      placeholder="np. Mercedes Sprinter Premium"
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-slate-600 mb-1">Typ pojazdu *</label>
-                    <select
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value as VehicleType })}
-                      className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
-                    >
-                      {Object.entries(vehicleTypeLabels).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm text-slate-600 mb-1">Marka *</label>
                     <input
                       type="text"
                       value={formData.brand}
-                      onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                      placeholder="np. Mercedes"
+                      onChange={(e) => setFormData({ ...formData, brand: e.target.value, model: "" })}
+                      onFocus={() => setShowBrandDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowBrandDropdown(false), 150)}
+                      placeholder="np. Mercedes-Benz"
                       className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                       required
                     />
+                    {showBrandDropdown && (() => {
+                      const filtered = brandNames.filter(b => b.toLowerCase().includes(formData.brand.toLowerCase()));
+                      return filtered.length > 0 ? (
+                        <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {filtered.map((b) => (
+                            <li
+                              key={b}
+                              onMouseDown={() => { setFormData({ ...formData, brand: b, model: "" }); setShowBrandDropdown(false); }}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-emerald-50 hover:text-emerald-700"
+                            >
+                              {b}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null;
+                    })()}
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm text-slate-600 mb-1">Model *</label>
                     <input
                       type="text"
                       value={formData.model}
                       onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                      placeholder="np. Sprinter"
+                      onFocus={() => setShowModelDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowModelDropdown(false), 150)}
+                      placeholder={formData.brand ? `np. model ${formData.brand}` : "Najpierw wybierz markę"}
                       className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                       required
                     />
+                    {showModelDropdown && (() => {
+                      const models = getModelsForBrand(formData.brand);
+                      const filtered = models.filter(m => m.toLowerCase().includes(formData.model.toLowerCase()));
+                      return filtered.length > 0 ? (
+                        <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {filtered.map((m) => (
+                            <li
+                              key={m}
+                              onMouseDown={() => { setFormData({ ...formData, model: m }); setShowModelDropdown(false); }}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-emerald-50 hover:text-emerald-700"
+                            >
+                              {m}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null;
+                    })()}
                   </div>
                   <div>
                     <label className="block text-sm text-slate-600 mb-1">Rok produkcji</label>
@@ -557,15 +575,34 @@ export default function MyFleet() {
                       required
                     />
                   </div>
-                  <div>
+                  <div className="relative">
                     <label className="block text-sm text-slate-600 mb-1">Kolor</label>
                     <input
                       type="text"
                       value={formData.color}
                       onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                      placeholder="np. Bialy"
+                      onFocus={() => setShowColorDropdown(true)}
+                      onBlur={() => setTimeout(() => setShowColorDropdown(false), 150)}
+                      placeholder="np. Biały"
                       className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-sm focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                     />
+                    {showColorDropdown && (() => {
+                      const colors = ["Biały", "Biały perłowy", "Kremowy", "Kość słoniowa", "Czarny", "Czarny metalik", "Srebrny", "Srebrny metalik", "Szary", "Szary metalik", "Grafitowy", "Antracytowy", "Czerwony", "Czerwony metalik", "Bordowy", "Karminowy", "Niebieski", "Niebieski metalik", "Granatowy", "Błękitny", "Zielony", "Zielony metalik", "Ciemnozielony", "Oliwkowy", "Żółty", "Pomarańczowy", "Brązowy", "Brązowy metalik", "Beżowy", "Piaskowy", "Złoty", "Złoty metalik", "Miedziany", "Titanowy", "Fioletowy", "Purpurowy", "Różowy", "Chameleon"];
+                      const filtered = colors.filter(c => c.toLowerCase().includes(formData.color.toLowerCase()));
+                      return filtered.length > 0 ? (
+                        <ul className="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+                          {filtered.map((c) => (
+                            <li
+                              key={c}
+                              onMouseDown={() => { setFormData({ ...formData, color: c }); setShowColorDropdown(false); }}
+                              className="px-3 py-2 text-sm cursor-pointer hover:bg-emerald-50 hover:text-emerald-700"
+                            >
+                              {c}
+                            </li>
+                          ))}
+                        </ul>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               </div>
