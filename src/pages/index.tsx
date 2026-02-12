@@ -4,6 +4,9 @@ import Link from "next/link";
 import type { OfferWithRequest } from "@/models";
 import { getRouteDisplay } from "@/models";
 import OfferDetailsModal from "@/components/OfferDetailsModal";
+import { PageTitle, PageSubtitle } from "@/components/ui/Typography";
+import { Card, CardHeader } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -32,65 +35,63 @@ export default function DashboardPage() {
   };
 
   if (status === "loading" || loading) {
-    return <p className="text-gray-500">Ladowanie...</p>;
-  }
-
-  if (!session) {
     return (
-      <div className="bg-white rounded-lg p-12 text-center">
-        <h1 className="text-2xl font-semibold mb-4">Panel Kierowcy Wayoo</h1>
-        <p className="text-gray-500">Zaloguj sie, aby uzyskac dostep do panelu.</p>
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
       </div>
     );
   }
 
+  if (!session) {
+    return (
+      <Card className="p-12 text-center">
+        <h1 className="text-title-lg font-bold text-white/90 mb-4">Panel Kierowcy Wayoo</h1>
+        <p className="text-gray-400">Zaloguj sie, aby uzyskac dostep do panelu.</p>
+      </Card>
+    );
+  }
+
   const pendingOffers = offers.filter((o) => o.status === "new");
-  const acceptedOffers = offers.filter((o) => o.status === "accepted");
   const paidOffers = offers.filter((o) => o.status === "paid");
-  const allPaidOffers = offers.filter((o) => o.status === "paid");
+  const totalRevenue = paidOffers.reduce((sum, o) => sum + o.price, 0);
 
   return (
-    <div className="max-w-[1200px]">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold mb-2">Dashboard</h1>
-        <p className="text-gray-500">
-          Witaj, {session.user?.name}!
-        </p>
+    <div>
+      {/* Naglowek */}
+      <div className="mb-8">
+        <PageTitle>Dashboard</PageTitle>
+        <PageSubtitle>Witaj, {session.user?.name}!</PageSubtitle>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Oczekujące na akceptację */}
+      {/* Metryki */}
+      <div className="max-w-[1100px] mx-auto grid grid-cols-3 gap-4 mb-8">
+        <MetricCard label="Zlozonych ofert" value={offers.length} />
+        <MetricCard label="Oczekujacych" value={pendingOffers.length} color="warning" />
+        <MetricCard label="Przychod" value={`${totalRevenue} PLN`} color="brand" />
+      </div>
+
+      {/* Boxy z ofertami */}
+      <div className="max-w-[1100px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
         <DashboardBox
-          title="Oczekujace na akceptacje"
+          title="Oczekujace"
           offers={pendingOffers}
           emptyText="Brak ofert oczekujacych"
-          color="yellow"
+          badgeColor="warning"
         />
-
-        {/* Zaakceptowane */}
-        <DashboardBox
-          title="Zaakceptowane"
-          offers={acceptedOffers}
-          emptyText="Brak zaakceptowanych ofert"
-          color="green"
-        />
-
-        {/* Opłacone */}
         <DashboardBox
           title="Oplacone"
           offers={paidOffers}
           emptyText="Brak oplaconych ofert"
-          color="blue"
+          badgeColor="info"
         />
       </div>
 
       {/* Kalendarz */}
-      <div className="mt-6">
-        <h2 className="text-lg font-semibold mb-4">Kalendarz zlecen</h2>
-        <CalendarView offers={allPaidOffers} onOfferClick={setSelectedOffer} />
-      </div>
+      <Card className="max-w-[1100px] mx-auto">
+        <CardHeader title="Kalendarz zlecen" />
+        <CalendarView offers={paidOffers} onOfferClick={setSelectedOffer} />
+      </Card>
 
-      {/* Modal szczegółów oferty */}
       {selectedOffer && (
         <OfferDetailsModal
           offer={selectedOffer}
@@ -101,48 +102,59 @@ export default function DashboardPage() {
   );
 }
 
+function MetricCard({
+  label,
+  value,
+  color,
+}: {
+  label: string;
+  value: number | string;
+  color?: "warning" | "success" | "brand" | "info";
+}) {
+  const accents: Record<string, string> = {
+    warning: "text-warning-400",
+    success: "text-success-400",
+    brand: "text-brand-400",
+    info: "text-info-400",
+  };
+
+  return (
+    <Card className="!py-4">
+      <p className="text-theme-xs font-medium text-gray-400 uppercase tracking-wide">{label}</p>
+      <p className={`text-title-lg font-bold mt-1 ${color ? accents[color] : "text-white/90"}`}>
+        {value}
+      </p>
+    </Card>
+  );
+}
+
 function DashboardBox({
   title,
   offers,
   emptyText,
-  color,
+  badgeColor,
 }: {
   title: string;
   offers: OfferWithRequest[];
   emptyText: string;
-  color: "yellow" | "green" | "blue";
+  badgeColor: "warning" | "success" | "info";
 }) {
-  const colorStyles = {
-    yellow: {
-      header: "bg-yellow-50 text-yellow-800 border-yellow-200",
-      badge: "bg-yellow-100 text-yellow-700",
-    },
-    green: {
-      header: "bg-green-50 text-green-800 border-green-200",
-      badge: "bg-green-100 text-green-700",
-    },
-    blue: {
-      header: "bg-blue-50 text-blue-800 border-blue-200",
-      badge: "bg-blue-100 text-blue-700",
-    },
+  const headerAccent: Record<string, string> = {
+    warning: "border-l-warning-500",
+    success: "border-l-success-500",
+    info: "border-l-info-500",
   };
 
-  const styles = colorStyles[color];
-
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-      <div className={`px-4 py-3 border-b ${styles.header}`}>
-        <div className="flex justify-between items-center">
-          <h3 className="font-medium text-sm">{title}</h3>
-          <span className={`text-xs px-2 py-0.5 rounded-full ${styles.badge}`}>
-            {offers.length}
-          </span>
-        </div>
+    <div className={`overflow-hidden rounded-2xl border border-gray-700/60 bg-gray-800/50 border-l-[3px] ${headerAccent[badgeColor]}`}>
+      <div className="flex items-center justify-between px-5 py-4">
+        <h3 className="text-base font-semibold text-white">{title}</h3>
+        <Badge color={badgeColor} size="md">{offers.length}</Badge>
       </div>
 
-      <div className="divide-y divide-gray-100 max-h-[198px] overflow-y-auto">
+      <div className="divide-y divide-gray-700/50 max-h-[240px] overflow-y-auto custom-scrollbar">
         {offers.length === 0 ? (
-          <div className="p-4 text-center text-gray-400 text-sm">
+          <div className="px-5 py-8 text-center text-gray-500 text-theme-sm">
             {emptyText}
           </div>
         ) : (
@@ -150,16 +162,16 @@ function DashboardBox({
             <Link
               key={offer.id}
               href="/my-offers"
-              className="block p-3 hover:bg-gray-50 transition-colors"
+              className="block px-5 py-3.5 hover:bg-white/[0.04] transition-colors"
             >
-              <p className="text-sm font-medium text-gray-900 truncate">
+              <p className="text-theme-sm font-medium text-white truncate">
                 {offer.request ? getRouteDisplay(offer.request.route) : "Brak trasy"}
               </p>
-              <div className="flex justify-between items-center mt-1">
-                <span className="text-xs text-gray-500">
+              <div className="flex justify-between items-center mt-2">
+                <span className="text-theme-xs text-gray-400">
                   {offer.request?.date} o {offer.request?.time}
                 </span>
-                <span className="text-sm font-semibold text-gray-700">
+                <span className="text-theme-sm font-bold text-white">
                   {offer.price} PLN
                 </span>
               </div>
@@ -169,10 +181,10 @@ function DashboardBox({
       </div>
 
       {offers.length > 0 && (
-        <div className="px-4 py-2 bg-gray-50 border-t border-gray-100">
+        <div className="px-5 py-3 border-t border-gray-700/50">
           <Link
             href="/my-offers"
-            className="text-xs text-green-600 hover:text-green-700 font-medium"
+            className="text-theme-sm text-brand-400 hover:text-brand-300 font-medium"
           >
             Zobacz wszystkie →
           </Link>
@@ -203,11 +215,10 @@ function CalendarView({
     return { month: date.getMonth(), year: date.getFullYear() };
   });
 
-  // Zbierz daty zleceń
   const offerDates = new Map<string, OfferWithRequest[]>();
   offers.forEach((offer) => {
     if (offer.request?.date) {
-      const key = offer.request.date; // format: YYYY-MM-DD
+      const key = offer.request.date;
       if (!offerDates.has(key)) {
         offerDates.set(key, []);
       }
@@ -218,7 +229,7 @@ function CalendarView({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {months.map(({ month, year }) => (
-        <div key={`${year}-${month}`} className="bg-white rounded-lg border border-gray-200 p-4">
+        <div key={`${year}-${month}`} className="rounded-xl border border-gray-800 bg-white/[0.02] p-4">
           <MonthCalendar
             month={month}
             year={year}
@@ -255,37 +266,24 @@ function MonthCalendar({
   const lastDay = new Date(year, month + 1, 0);
   const daysInMonth = lastDay.getDate();
 
-  // Poniedziałek = 0, Niedziela = 6
   let startDay = firstDay.getDay() - 1;
   if (startDay < 0) startDay = 6;
 
   const days: (number | null)[] = [];
-
-  // Puste dni na początku
   for (let i = 0; i < startDay; i++) {
     days.push(null);
   }
-
-  // Dni miesiąca
   for (let i = 1; i <= daysInMonth; i++) {
     days.push(i);
   }
 
-  const isToday = (day: number) => {
-    return (
-      day === today.getDate() &&
-      month === today.getMonth() &&
-      year === today.getFullYear()
-    );
-  };
+  const isToday = (day: number) =>
+    day === today.getDate() && month === today.getMonth() && year === today.getFullYear();
 
-  const getDateStr = (day: number) => {
-    return `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-  };
+  const getDateStr = (day: number) =>
+    `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 
-  const getOffersForDay = (day: number) => {
-    return offerDates.get(getDateStr(day)) || [];
-  };
+  const getOffersForDay = (day: number) => offerDates.get(getDateStr(day)) || [];
 
   const handleDayClick = (day: number, hasOffers: boolean) => {
     if (!hasOffers) return;
@@ -295,19 +293,17 @@ function MonthCalendar({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-gray-900 mb-3 text-center">
+      <h3 className="text-theme-sm font-semibold text-white/90 mb-3 text-center">
         {MONTH_NAMES[month]} {year}
       </h3>
 
       <div className="grid grid-cols-7 gap-1 text-center">
-        {/* Nagłówki dni */}
         {DAY_NAMES.map((name) => (
-          <div key={name} className="text-xs text-gray-400 font-medium py-1">
+          <div key={name} className="text-theme-xs text-gray-500 font-medium py-1">
             {name}
           </div>
         ))}
 
-        {/* Dni */}
         {days.map((day, index) => {
           if (day === null) {
             return <div key={`empty-${index}`} className="py-1" />;
@@ -324,22 +320,21 @@ function MonthCalendar({
               <div
                 onClick={() => handleDayClick(day, hasOffers)}
                 className={`
-                  relative py-1 text-sm rounded-md
-                  ${isTodayDate ? "bg-green-600 text-white font-bold" : ""}
-                  ${hasOffers && !isTodayDate ? "bg-blue-100 text-blue-800 font-medium cursor-pointer hover:bg-blue-200" : ""}
-                  ${!hasOffers && !isTodayDate ? "text-gray-600" : ""}
-                  ${isActive ? "ring-2 ring-blue-500" : ""}
+                  relative py-1 text-theme-sm rounded-md transition-colors
+                  ${isTodayDate ? "bg-brand-500 text-white font-bold" : ""}
+                  ${hasOffers && !isTodayDate ? "bg-brand-500/15 text-brand-400 font-medium cursor-pointer hover:bg-brand-500/25" : ""}
+                  ${!hasOffers && !isTodayDate ? "text-gray-400" : ""}
+                  ${isActive ? "ring-2 ring-brand-400" : ""}
                 `}
               >
                 {day}
                 {hasOffers && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white text-[10px] rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-500 text-white text-[10px] rounded-full flex items-center justify-center">
                     {dayOffers.length}
                   </span>
                 )}
               </div>
 
-              {/* Tooltip */}
               {isActive && hasOffers && (
                 <DayTooltip
                   offers={dayOffers}
@@ -378,35 +373,35 @@ function DayTooltip({
   };
 
   return (
-    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 bg-white border border-gray-200 rounded-lg shadow-lg">
-      <div className="flex justify-between items-center px-3 py-2 border-b border-gray-100 bg-gray-50 rounded-t-lg">
-        <span className="text-xs font-semibold text-gray-700">
+    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-gray-800 bg-gray-900 shadow-theme-lg">
+      <div className="flex justify-between items-center px-3 py-2 border-b border-gray-800">
+        <span className="text-theme-xs font-semibold text-gray-300">
           {formatDate(dateStr)} - {offers.length} {offers.length === 1 ? "przejazd" : "przejazdy"}
         </span>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-gray-600"
+          className="text-gray-500 hover:text-gray-300"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div className="max-h-48 overflow-y-auto divide-y divide-gray-100">
+      <div className="max-h-48 overflow-y-auto divide-y divide-gray-800 custom-scrollbar">
         {offers.map((offer) => (
           <button
             key={offer.id}
             onClick={() => handleOfferClick(offer)}
-            className="block w-full text-left px-3 py-2 hover:bg-gray-50 transition-colors"
+            className="block w-full text-left px-3 py-2 hover:bg-white/[0.03] transition-colors"
           >
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-theme-sm font-medium text-white/90 truncate">
               {offer.request ? getRouteDisplay(offer.request.route) : "Brak trasy"}
             </p>
             <div className="flex justify-between items-center mt-1">
-              <span className="text-xs text-gray-500">
+              <span className="text-theme-xs text-gray-400">
                 {offer.request?.time}
               </span>
-              <span className="text-xs font-semibold text-green-600">
+              <span className="text-theme-xs font-semibold text-brand-400">
                 {offer.price} PLN
               </span>
             </div>

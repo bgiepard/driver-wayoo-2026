@@ -1,58 +1,103 @@
 @import "tailwindcss";
 
-:root {
-  --background: #fafafa;
-  --foreground: #1a1a1a;
-  --muted: #6b7280;
-  --border: #e5e5e5;
-  --accent: #16a34a;
-  --accent-light: #f0fdf4;
+/* ============================================
+   TAILWIND THEME TOKENS
+   ============================================ */
+@theme {
+  /* Font */
+  --font-outfit: "Outfit", system-ui, -apple-system, sans-serif;
+
+  /* Rozmiary tekstu */
+  --text-theme-xs: 0.75rem;     /* 12px */
+  --text-theme-sm: 0.875rem;    /* 14px */
+  --text-title-sm: 1.125rem;    /* 18px */
+  --text-title-md: 1.25rem;     /* 20px */
+  --text-title-lg: 1.5rem;      /* 24px */
+  --text-title-2xl: 1.75rem;    /* 28px */
+
+  /* Line height */
+  --leading-theme-xs: 1.125rem;
+  --leading-theme-sm: 1.25rem;
+  --leading-title-sm: 1.5rem;
+  --leading-title-md: 1.625rem;
+  --leading-title-lg: 2rem;
+  --leading-title-2xl: 2.25rem;
+
+  /* Cienie */
+  --shadow-theme-xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
+  --shadow-theme-sm: 0px 1px 3px 0px rgba(0, 0, 0, 0.4), 0px 1px 2px -1px rgba(0, 0, 0, 0.3);
+  --shadow-theme-md: 0px 4px 8px -2px rgba(0, 0, 0, 0.4), 0px 2px 4px -2px rgba(0, 0, 0, 0.3);
+  --shadow-theme-lg: 0px 8px 13px -3px rgba(0, 0, 0, 0.5);
+
+  /* Brand (zielony wayoo) */
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #16a34a;
+  --color-brand-600: #15803d;
+  --color-brand-700: #166534;
+
+  /* Success */
+  --color-success-50: #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-400: #34d399;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+
+  /* Warning */
+  --color-warning-50: #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-400: #fbbf24;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+
+  /* Error */
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-400: #f87171;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+
+  /* Info (blue) */
+  --color-info-50: #eff6ff;
+  --color-info-100: #dbeafe;
+  --color-info-400: #60a5fa;
+  --color-info-500: #3b82f6;
+  --color-info-600: #2563eb;
 }
 
+/* ============================================
+   BAZOWE STYLE - DARK ONLY
+   ============================================ */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.6;
+  font-family: "Outfit", system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-}
-
-h1, h2, h3 {
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--foreground);
-}
-
-h1 {
-  font-size: 1.75rem;
-}
-
-h2 {
-  font-size: 1.25rem;
-  color: var(--muted);
+  -moz-osx-font-smoothing: grayscale;
+  background-color: #111827; /* gray-900 */
+  color: rgba(255, 255, 255, 0.9);
 }
 
 a {
-  color: var(--foreground);
   text-decoration: none;
-  transition: color 0.15s;
+  color: inherit;
 }
 
-a:hover {
-  color: var(--accent);
-}
-
-button {
-  font-family: inherit;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-input, textarea {
+input, textarea, button {
   font-family: inherit;
 }
 
-input:focus, textarea:focus, button:focus {
-  outline: none;
-  border-color: var(--accent);
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #374151;
+  border-radius: 3px;
 }
