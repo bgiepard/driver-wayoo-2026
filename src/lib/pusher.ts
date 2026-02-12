@@ -19,6 +19,8 @@ export interface NewOfferEvent {
   driverName?: string;
   price: number;
   message: string;
+  routeOrigin?: string;
+  routeDestination?: string;
 }
 
 // Funkcje pomocnicze do wysyłania eventów

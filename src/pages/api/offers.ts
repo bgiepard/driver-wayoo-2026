@@ -54,9 +54,22 @@ export default async function handler(
 
       const offer = await createOffer(requestId, driverId, price, message || "", vehicleId);
 
-      // Pobierz request aby uzyskac userId pasazera
+      // Pobierz request aby uzyskac userId pasazera i trase
       const request = await getRequestById(requestId);
       const passengerId = request?.userId;
+
+      // Parsuj trase z requestu
+      let routeOrigin = "";
+      let routeDestination = "";
+      try {
+        const route = JSON.parse(request?.route || "{}");
+        routeOrigin = route.origin?.address?.split(",")[0] || "";
+        routeDestination = route.destination?.address?.split(",")[0] || "";
+      } catch {
+        // Ignore parse errors
+      }
+
+      const routeLabel = routeOrigin && routeDestination ? `${routeOrigin} → ${routeDestination}` : "";
 
       // 1. Zapisz powiadomienie do bazy danych (dla pasazera)
       if (passengerId) {
@@ -64,7 +77,7 @@ export default async function handler(
           await notificationsTable.create({
             userId: passengerId,
             type: "new_offer",
-            title: "Nowa oferta!",
+            title: routeLabel || "Nowa oferta!",
             message: `${user.name || "Kierowca"} zlozyl oferte: ${offer.price} PLN`,
             link: `/request/${requestId}/offers`,
             read: false,
@@ -84,6 +97,8 @@ export default async function handler(
           driverName: user.name || undefined,
           price: offer.price,
           message: offer.message,
+          routeOrigin,
+          routeDestination,
         });
       } catch {
         // Ignore Pusher errors
