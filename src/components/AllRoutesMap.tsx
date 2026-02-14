@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { Route } from "@/models";
+import { DARK_MAP_STYLES } from "@/lib/mapStyles";
 
 interface RouteWithId {
   id: string;
@@ -12,26 +13,6 @@ interface AllRoutesMapProps {
   selectedRouteId?: string | null;
   onRouteClick?: (id: string) => void;
 }
-
-// Jasny styl mapy
-const MAP_STYLES: google.maps.MapTypeStyle[] = [
-  { featureType: "all", elementType: "geometry", stylers: [{ color: "#f8f9fa" }] },
-  { featureType: "all", elementType: "labels.text.fill", stylers: [{ color: "#6c757d" }] },
-  { featureType: "all", elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
-  { featureType: "administrative.country", elementType: "geometry.stroke", stylers: [{ color: "#6c757d" }, { weight: 2 }] },
-  { featureType: "administrative.province", elementType: "geometry.stroke", stylers: [{ color: "#adb5bd" }, { weight: 1.5 }] },
-  { featureType: "administrative.locality", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
-  { featureType: "administrative.land_parcel", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e9ecef" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#e9ecef" }] },
-  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#cfe2f3" }] },
-  { featureType: "water", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#f1f3f4" }] },
-];
 
 export default function AllRoutesMap({ routes, height = "400px", selectedRouteId, onRouteClick }: AllRoutesMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
@@ -62,7 +43,7 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
-        styles: MAP_STYLES,
+        styles: DARK_MAP_STYLES,
       });
 
       setMapReady(true);
@@ -293,10 +274,10 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
   if (routes.length === 0) {
     return (
       <div
-        className="w-full rounded-lg bg-gray-100 flex items-center justify-center"
+        className="w-full rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center"
         style={{ height }}
       >
-        <span className="text-gray-500 text-sm">Brak tras do wyswietlenia</span>
+        <span className="text-gray-600 text-sm">Brak tras do wyswietlenia</span>
       </div>
     );
   }
@@ -304,25 +285,25 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
   return (
     <div className="relative">
       {loadingRoute && (
-        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-md shadow-sm z-10">
+        <div className="absolute top-2 right-2 bg-gray-900/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/[0.08] z-10">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-gray-600">Ladowanie trasy...</span>
+            <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs text-gray-400">Ladowanie trasy...</span>
           </div>
         </div>
       )}
 
       <div
         ref={mapRef}
-        className="w-full rounded-lg"
+        className="w-full rounded-xl"
         style={{ height }}
       />
 
       {routes.length > 0 && (
-        <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-md shadow-sm">
-          <p className="text-xs text-gray-600">
+        <div className="absolute bottom-2 left-2 bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/[0.08]">
+          <p className="text-xs text-gray-400">
             {routes.length} {routes.length === 1 ? "zlecenie" : routes.length < 5 ? "zlecenia" : "zlecen"}
-            {selectedRouteId && " • kliknij gdzie indziej aby schowac trase"}
+            {selectedRouteId && " · kliknij gdzie indziej aby schowac trase"}
           </p>
         </div>
       )}

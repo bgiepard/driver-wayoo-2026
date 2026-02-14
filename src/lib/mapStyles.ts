@@ -1,0 +1,21 @@
+// Ciemny styl mapy Google dopasowany do dark theme aplikacji
+export const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: "geometry", stylers: [{ color: "#111827" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#4b5563" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#111827" }] },
+  { featureType: "administrative", elementType: "geometry.stroke", stylers: [{ color: "#1f2937" }] },
+  { featureType: "administrative.country", elementType: "geometry.stroke", stylers: [{ color: "#374151" }, { weight: 1 }] },
+  { featureType: "administrative.land_parcel", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "poi", stylers: [{ visibility: "off" }] },
+  { featureType: "road", elementType: "geometry", stylers: [{ color: "#1a1f2e" }] },
+  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#111827" }] },
+  { featureType: "road", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#1e2433" }] },
+  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#151a27" }] },
+  { featureType: "road.arterial", elementType: "geometry", stylers: [{ color: "#1a1f2e" }] },
+  { featureType: "transit", stylers: [{ visibility: "off" }] },
+  { featureType: "water", elementType: "geometry", stylers: [{ color: "#0a0f1a" }] },
+  { featureType: "water", elementType: "labels", stylers: [{ visibility: "off" }] },
+  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#131927" }] },
+  { featureType: "landscape.man_made", elementType: "geometry", stylers: [{ color: "#111827" }] },
+];

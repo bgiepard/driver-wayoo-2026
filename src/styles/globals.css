@@ -4,8 +4,7 @@
    TAILWIND THEME TOKENS
    ============================================ */
 @theme {
-  /* Font */
-  --font-outfit: "Outfit", system-ui, -apple-system, sans-serif;
+  /* Font - ladowany przez next/font w _app.tsx */
 
   /* Rozmiary tekstu */
   --text-theme-xs: 0.75rem;     /* 12px */
@@ -72,7 +71,7 @@
    BAZOWE STYLE - DARK ONLY
    ============================================ */
 body {
-  font-family: "Outfit", system-ui, -apple-system, sans-serif;
+  font-family: inherit;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #111827; /* gray-900 */
