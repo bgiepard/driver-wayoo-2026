@@ -78,7 +78,7 @@ export default async function handler(
         return res.status(400).json({ error: "Brakuje wymaganych pol" });
       }
 
-      const record = await vehiclesTable.create({
+      const fields: Record<string, unknown> = {
         driverId,
         name: data.name,
         type: data.type,
@@ -89,7 +89,6 @@ export default async function handler(
         licensePlate: data.licensePlate,
         color: data.color || "",
         description: data.description || "",
-        fuelConsumption: data.fuelConsumption ?? null,
         photos: JSON.stringify(data.photos || []),
         hasWifi: data.hasWifi || false,
         hasWC: data.hasWC || false,
@@ -99,7 +98,12 @@ export default async function handler(
         hasLuggage: data.hasLuggage || false,
         isActive: true,
         createdAt: new Date().toISOString(),
-      });
+      };
+      if (data.fuelConsumption !== undefined) {
+        fields.fuelConsumption = data.fuelConsumption;
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const record = await vehiclesTable.create(fields as any) as any;
 
       return res.status(201).json({ id: record.id, message: "Pojazd dodany" });
     } catch (error) {
