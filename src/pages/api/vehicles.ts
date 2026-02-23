@@ -50,6 +50,7 @@ export default async function handler(
         licensePlate: record.get("licensePlate") as string,
         color: record.get("color") as string,
         description: record.get("description") as string | undefined,
+        fuelConsumption: record.get("fuelConsumption") as number | undefined,
         photos: JSON.parse((record.get("photos") as string) || "[]"),
         hasWifi: record.get("hasWifi") as boolean,
         hasWC: record.get("hasWC") as boolean,
@@ -88,6 +89,7 @@ export default async function handler(
         licensePlate: data.licensePlate,
         color: data.color || "",
         description: data.description || "",
+        fuelConsumption: data.fuelConsumption ?? null,
         photos: JSON.stringify(data.photos || []),
         hasWifi: data.hasWifi || false,
         hasWC: data.hasWC || false,
@@ -138,6 +140,7 @@ export default async function handler(
       if (data.licensePlate !== undefined) updateData.licensePlate = data.licensePlate;
       if (data.color !== undefined) updateData.color = data.color;
       if (data.description !== undefined) updateData.description = data.description;
+      if (data.fuelConsumption !== undefined) updateData.fuelConsumption = data.fuelConsumption;
       if (data.photos !== undefined) updateData.photos = JSON.stringify(data.photos);
       if (data.hasWifi !== undefined) updateData.hasWifi = data.hasWifi;
       if (data.hasWC !== undefined) updateData.hasWC = data.hasWC;

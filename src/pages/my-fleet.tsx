@@ -48,7 +48,7 @@ export default function MyFleet() {
   const [formData, setFormData] = useState<CreateVehicleData>({
     name: "", type: "bus", brand: "", model: "",
     year: new Date().getFullYear(), seats: 1,
-    licensePlate: "", color: "", description: "", photos: [],
+    licensePlate: "", color: "", description: "", fuelConsumption: undefined, photos: [],
     hasWifi: false, hasWC: false, hasTV: false,
     hasAirConditioning: false, hasPowerOutlets: false, hasLuggage: false,
   });
@@ -74,7 +74,7 @@ export default function MyFleet() {
     setFormData({
       name: "", type: "bus", brand: "", model: "",
       year: new Date().getFullYear(), seats: 1,
-      licensePlate: "", color: "", description: "", photos: [],
+      licensePlate: "", color: "", description: "", fuelConsumption: undefined, photos: [],
       hasWifi: false, hasWC: false, hasTV: false,
       hasAirConditioning: false, hasPowerOutlets: false, hasLuggage: false,
     });
@@ -90,7 +90,7 @@ export default function MyFleet() {
       name: vehicle.name, type: vehicle.type, brand: vehicle.brand,
       model: vehicle.model, year: vehicle.year, seats: vehicle.seats,
       licensePlate: vehicle.licensePlate, color: vehicle.color,
-      description: vehicle.description || "", photos: vehicle.photos || [],
+      description: vehicle.description || "", fuelConsumption: vehicle.fuelConsumption, photos: vehicle.photos || [],
       hasWifi: vehicle.hasWifi, hasWC: vehicle.hasWC, hasTV: vehicle.hasTV,
       hasAirConditioning: vehicle.hasAirConditioning,
       hasPowerOutlets: vehicle.hasPowerOutlets, hasLuggage: vehicle.hasLuggage,
@@ -673,6 +673,24 @@ function VehicleFormModal({
                 rows={3}
                 className={`${INPUT_CLASS} resize-none`}
               />
+            </div>
+
+            {/* Srednie spalanie */}
+            <div>
+              <label className="block text-xs font-medium text-gray-400 mb-1.5">Średnie spalanie (opcjonalnie)</label>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={formData.fuelConsumption ?? ""}
+                  onChange={(e) => setFormData({ ...formData, fuelConsumption: e.target.value ? parseFloat(e.target.value) : undefined })}
+                  placeholder="np. 8.5"
+                  min="0"
+                  max="100"
+                  step="0.1"
+                  className={INPUT_CLASS}
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500 pointer-events-none">l/100km</span>
+              </div>
             </div>
 
             {/* Wyposazenie */}

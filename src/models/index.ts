@@ -160,6 +160,7 @@ export interface Vehicle {
   licensePlate: string;   // Numer rejestracyjny
   color: string;          // Kolor
   description?: string;   // Opis dodatkowy
+  fuelConsumption?: number; // Średnie spalanie [l/100km]
   photos: string[];       // URL zdjęć (max 5)
   // Wyposażenie
   hasWifi: boolean;
@@ -182,6 +183,7 @@ export interface CreateVehicleData {
   licensePlate: string;
   color: string;
   description?: string;
+  fuelConsumption?: number;
   photos?: string[];
   hasWifi?: boolean;
   hasWC?: boolean;

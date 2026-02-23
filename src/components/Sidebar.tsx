@@ -79,6 +79,15 @@ const navItems: NavItem[] = [
     ),
   },
   {
+    href: "/trip-history",
+    label: "Historia przejazdów",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
+  {
     href: "#",
     label: "Statystyki",
     icon: (
@@ -111,6 +120,15 @@ const navItems: NavItem[] = [
     badge: true,
   },
   {
+    href: "/business-card",
+    label: "Moja wizytówka",
+    icon: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2" />
+      </svg>
+    ),
+  },
+  {
     href: "/account",
     label: "Konto",
     icon: (
@@ -130,7 +148,7 @@ export default function Sidebar() {
   if (!session) {
     return (
       <>
-        <aside className="w-96 bg-gray-900 border-r border-gray-800 min-h-screen flex flex-col">
+        <aside className="w-96 bg-gray-900 border-r border-gray-800 h-full flex flex-col">
           <div className="p-6 border-b border-gray-800 flex items-center gap-3">
             <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
             <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
@@ -150,7 +168,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-96 bg-gray-900 border-r border-gray-800 min-h-screen flex flex-col">
+    <aside className="w-96 bg-gray-900 border-r border-gray-800 h-full flex flex-col">
       <div className="p-6 border-b border-gray-800 flex items-center gap-3">
         <Link href="/">
           <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
