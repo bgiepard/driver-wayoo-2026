@@ -15,11 +15,6 @@ const STATUS_CONFIG: Record<OfferStatus, { label: string; dot: string; badge: st
     dot: "bg-warning-400",
     badge: "bg-warning-500/10 text-warning-400 border-warning-500/20",
   },
-  accepted: {
-    label: "Zaakceptowana",
-    dot: "bg-success-400",
-    badge: "bg-success-500/10 text-success-400 border-success-500/20",
-  },
   paid: {
     label: "Oplacona",
     dot: "bg-info-400",
@@ -41,13 +36,12 @@ const STATUS_CONFIG: Record<OfferStatus, { label: string; dot: string; badge: st
    TABY
    ============================================ */
 
-type TabKey = "all" | "new" | "accepted" | "paid" | "rejected" | "canceled";
+type TabKey = "all" | "new" | "paid" | "rejected" | "canceled";
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all", label: "Wszystkie" },
   { key: "new", label: "Oczekujace" },
   { key: "paid", label: "Oplacone" },
-  { key: "accepted", label: "Zaakceptowane" },
   { key: "rejected", label: "Odrzucone" },
   { key: "canceled", label: "Anulowane" },
 ];
@@ -107,7 +101,6 @@ export default function MyOffers() {
   const counts: Record<TabKey, number> = {
     all: offers.length,
     new: offers.filter((o) => o.status === "new").length,
-    accepted: offers.filter((o) => o.status === "accepted").length,
     paid: offers.filter((o) => o.status === "paid").length,
     rejected: offers.filter((o) => o.status === "rejected").length,
     canceled: offers.filter((o) => o.status === "canceled").length,

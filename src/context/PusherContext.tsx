@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, ReactNode, useState } from "react";
 import { useSession } from "next-auth/react";
-import { getPusherClient, type OfferAcceptedEvent, type OfferPaidEvent } from "@/lib/pusher-client";
+import { getPusherClient, type OfferPaidEvent } from "@/lib/pusher-client";
 import { useNotifications } from "./NotificationsContext";
 
 interface PusherContextType {
@@ -54,16 +54,6 @@ export function PusherProvider({ children }: { children: ReactNode }) {
 
     const channel = pusher.subscribe(channelName);
     subscribedChannelRef.current = channelName;
-
-    channel.bind("offer-accepted", (data: OfferAcceptedEvent) => {
-      addLocalNotificationRef.current({
-        type: "offer_accepted",
-        title: "Oferta zaakceptowana!",
-        message: data.message || "Twoja oferta zostala zaakceptowana przez klienta.",
-        link: "/my-offers",
-      });
-      setTimeout(() => refreshNotificationsRef.current(), 500);
-    });
 
     channel.bind("offer-paid", (data: OfferPaidEvent) => {
       addLocalNotificationRef.current({

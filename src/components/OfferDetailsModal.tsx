@@ -13,11 +13,6 @@ const STATUS_CONFIG: Record<string, { label: string; dot: string; badge: string 
     dot: "bg-warning-400",
     badge: "bg-warning-500/10 text-warning-400 border-warning-500/20",
   },
-  accepted: {
-    label: "Zaakceptowana",
-    dot: "bg-success-400",
-    badge: "bg-success-500/10 text-success-400 border-success-500/20",
-  },
   paid: {
     label: "Oplacona",
     dot: "bg-info-400",

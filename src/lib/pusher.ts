@@ -10,7 +10,7 @@ export const pusher = new Pusher({
 });
 
 // Typy eventów
-export type PusherEventType = "new-offer" | "offer-accepted" | "offer-rejected";
+export type PusherEventType = "new-offer" | "offer-rejected";
 
 export interface NewOfferEvent {
   offerId: string;

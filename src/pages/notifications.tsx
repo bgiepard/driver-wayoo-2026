@@ -32,13 +32,6 @@ function pluralNotifications(count: number): string {
    ============================================ */
 
 function NotificationIcon({ type }: { type: Notification["type"] }) {
-  if (type === "offer_accepted") {
-    return (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    );
-  }
   if (type === "offer_rejected") {
     return (
       <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
@@ -62,10 +55,6 @@ function NotificationIcon({ type }: { type: Notification["type"] }) {
 }
 
 const TYPE_STYLE: Record<Notification["type"], { icon: string; dot: string }> = {
-  offer_accepted: {
-    icon: "bg-brand-500/10 text-brand-400",
-    dot: "bg-brand-500",
-  },
   offer_rejected: {
     icon: "bg-error-500/10 text-error-400",
     dot: "bg-error-500",
