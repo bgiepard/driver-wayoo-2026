@@ -7,6 +7,9 @@ import { NotificationsProvider } from "@/context/NotificationsContext";
 import { PusherProvider } from "@/context/PusherContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useRouter } from "next/router";
+import { StatsigProvider, useClientAsyncInit } from "@statsig/react-bindings";
+import { StatsigAutoCapturePlugin } from "@statsig/web-analytics";
+import { StatsigSessionReplayPlugin } from "@statsig/session-replay";
 
 const geist = Geist({
   subsets: ["latin", "latin-ext"],
@@ -33,19 +36,27 @@ function AppContent({ Component, pageProps }: { Component: AppProps["Component"]
 }
 
 export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
+  const { client } = useClientAsyncInit(
+    "client-PYZfQt9faUJcvTUq6IUO5L8wvJqpuXup95Q2AxRf2n7",
+    { userID: 'a-user' },
+    { plugins: [ new StatsigAutoCapturePlugin(), new StatsigSessionReplayPlugin() ] },
+  );
+
   return (
-    <SessionProvider session={session}>
-      <Script
-        src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=pl`}
-        strategy="beforeInteractive"
-      />
-      <div className={geist.className}>
-        <NotificationsProvider>
-          <PusherProvider>
-            <AppContent Component={Component} pageProps={pageProps} />
-          </PusherProvider>
-        </NotificationsProvider>
-      </div>
-    </SessionProvider>
+    <StatsigProvider client={client} loadingComponent={<div>Loading...</div>}>
+      <SessionProvider session={session}>
+        <Script
+          src={`https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places&language=pl`}
+          strategy="beforeInteractive"
+        />
+        <div className={geist.className}>
+          <NotificationsProvider>
+            <PusherProvider>
+              <AppContent Component={Component} pageProps={pageProps} />
+            </PusherProvider>
+          </NotificationsProvider>
+        </div>
+      </SessionProvider>
+    </StatsigProvider>
   );
 }
