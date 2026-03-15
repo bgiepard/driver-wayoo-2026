@@ -1,18 +1,17 @@
 @import "tailwindcss";
+@import "./tokens.css";
 
 /* ============================================
-   TAILWIND THEME TOKENS
+   TAILWIND THEME — mapowanie tokenów na klasy
    ============================================ */
 @theme {
-  /* Font - ladowany przez next/font w _app.tsx */
-
   /* Rozmiary tekstu */
-  --text-theme-xs: 0.75rem;     /* 12px */
-  --text-theme-sm: 0.875rem;    /* 14px */
-  --text-title-sm: 1.125rem;    /* 18px */
-  --text-title-md: 1.25rem;     /* 20px */
-  --text-title-lg: 1.5rem;      /* 24px */
-  --text-title-2xl: 1.75rem;    /* 28px */
+  --text-theme-xs: var(--font-size-xs);
+  --text-theme-sm: var(--font-size-sm);
+  --text-title-sm: var(--font-size-lg);
+  --text-title-md: var(--font-size-xl);
+  --text-title-lg: var(--font-size-2xl);
+  --text-title-2xl: var(--font-size-3xl);
 
   /* Line height */
   --leading-theme-xs: 1.125rem;
@@ -23,59 +22,51 @@
   --leading-title-2xl: 2.25rem;
 
   /* Cienie */
-  --shadow-theme-xs: 0px 1px 2px 0px rgba(0, 0, 0, 0.3);
-  --shadow-theme-sm: 0px 1px 3px 0px rgba(0, 0, 0, 0.4), 0px 1px 2px -1px rgba(0, 0, 0, 0.3);
-  --shadow-theme-md: 0px 4px 8px -2px rgba(0, 0, 0, 0.4), 0px 2px 4px -2px rgba(0, 0, 0, 0.3);
-  --shadow-theme-lg: 0px 8px 13px -3px rgba(0, 0, 0, 0.5);
+  --shadow-theme-xs: var(--shadow-xs);
+  --shadow-theme-sm: var(--shadow-sm);
+  --shadow-theme-md: var(--shadow-md);
+  --shadow-theme-lg: var(--shadow-lg);
 
-  /* Brand (zielony wayoo) */
-  --color-brand-50: #f0fdf4;
-  --color-brand-100: #dcfce7;
-  --color-brand-200: #bbf7d0;
-  --color-brand-300: #86efac;
-  --color-brand-400: #4ade80;
-  --color-brand-500: #16a34a;
-  --color-brand-600: #15803d;
-  --color-brand-700: #166534;
+  /* Brand */
+  --color-brand-50:  var(--wayoo-brand-50);
+  --color-brand-100: var(--wayoo-brand-100);
+  --color-brand-200: var(--wayoo-brand-200);
+  --color-brand-300: var(--wayoo-brand-300);
+  --color-brand-400: var(--wayoo-brand-400);
+  --color-brand-500: var(--wayoo-brand-500);
+  --color-brand-600: var(--wayoo-brand-600);
+  --color-brand-700: var(--wayoo-brand-700);
 
   /* Success */
-  --color-success-50: #ecfdf5;
-  --color-success-100: #d1fae5;
-  --color-success-400: #34d399;
-  --color-success-500: #10b981;
-  --color-success-600: #059669;
+  --color-success-400: var(--wayoo-success-400);
+  --color-success-500: var(--wayoo-success-500);
+  --color-success-600: var(--wayoo-success-600);
 
   /* Warning */
-  --color-warning-50: #fffbeb;
-  --color-warning-100: #fef3c7;
-  --color-warning-400: #fbbf24;
-  --color-warning-500: #f59e0b;
-  --color-warning-600: #d97706;
+  --color-warning-400: var(--wayoo-warning-400);
+  --color-warning-500: var(--wayoo-warning-500);
+  --color-warning-600: var(--wayoo-warning-600);
 
   /* Error */
-  --color-error-50: #fef2f2;
-  --color-error-100: #fee2e2;
-  --color-error-400: #f87171;
-  --color-error-500: #ef4444;
-  --color-error-600: #dc2626;
+  --color-error-400: var(--wayoo-error-400);
+  --color-error-500: var(--wayoo-error-500);
+  --color-error-600: var(--wayoo-error-600);
 
-  /* Info (blue) */
-  --color-info-50: #eff6ff;
-  --color-info-100: #dbeafe;
-  --color-info-400: #60a5fa;
-  --color-info-500: #3b82f6;
-  --color-info-600: #2563eb;
+  /* Info */
+  --color-info-400: var(--wayoo-info-400);
+  --color-info-500: var(--wayoo-info-500);
+  --color-info-600: var(--wayoo-info-600);
 }
 
 /* ============================================
-   BAZOWE STYLE - DARK ONLY
+   BAZOWE STYLE
    ============================================ */
 body {
-  font-family: inherit;
+  font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #111827; /* gray-900 */
-  color: rgba(255, 255, 255, 0.9);
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
 }
 
 a {
@@ -97,6 +88,6 @@ input, textarea, button {
   background: transparent;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #374151;
-  border-radius: 3px;
+  background: #d1d5db;  /* gray-300 */
+  border-radius: var(--radius-sm);
 }

@@ -35,7 +35,7 @@ export function DashboardCalendar({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {months.map(({ month, year }) => (
-        <div key={`${year}-${month}`} className="rounded-xl bg-white/[0.02] border border-white/[0.04] p-4">
+        <div key={`${year}-${month}`} className="rounded-xl bg-gray-50 border border-gray-100 p-4">
           <MonthCalendar
             month={month}
             year={year}
@@ -89,13 +89,13 @@ function MonthCalendar({
 
   return (
     <div>
-      <h3 className="text-sm font-semibold text-white/80 mb-3 text-center tracking-wide">
+      <h3 className="text-sm font-semibold text-gray-700 mb-3 text-center tracking-wide">
         {MONTH_NAMES[month]} {year}
       </h3>
 
       <div className="grid grid-cols-7 gap-1 text-center">
         {DAY_NAMES.map((name) => (
-          <div key={name} className="text-[11px] text-gray-600 font-medium py-1">{name}</div>
+          <div key={name} className="text-[11px] text-gray-400 font-medium py-1">{name}</div>
         ))}
 
         {days.map((day, index) => {
@@ -114,7 +114,7 @@ function MonthCalendar({
                 className={`
                   relative py-1 text-sm rounded-lg transition-all duration-150
                   ${isTodayDate ? "bg-brand-500 text-white font-bold" : ""}
-                  ${hasOffers && !isTodayDate ? "bg-brand-500/10 text-brand-400 font-medium cursor-pointer hover:bg-brand-500/20" : ""}
+                  ${hasOffers && !isTodayDate ? "bg-brand-50 text-brand-700 font-medium cursor-pointer hover:bg-brand-100" : ""}
                   ${!hasOffers && !isTodayDate ? "text-gray-500" : ""}
                   ${isActive ? "ring-2 ring-brand-400/60" : ""}
                 `}
@@ -157,30 +157,30 @@ function DayTooltip({
   };
 
   return (
-    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-white/[0.08] bg-gray-900 shadow-theme-lg backdrop-blur-sm">
-      <div className="flex justify-between items-center px-3 py-2.5 border-b border-white/[0.06]">
-        <span className="text-xs font-semibold text-gray-300">
+    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
+      <div className="flex justify-between items-center px-3 py-2.5 border-b border-gray-100">
+        <span className="text-xs font-semibold text-gray-700">
           {formatDate(dateStr)} &middot; {offers.length} {offers.length === 1 ? "przejazd" : "przejazdy"}
         </span>
-        <button onClick={onClose} className="text-gray-500 hover:text-gray-300 transition-colors">
+        <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
           <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
       </div>
-      <div className="max-h-48 overflow-y-auto divide-y divide-white/[0.04] custom-scrollbar">
+      <div className="max-h-48 overflow-y-auto divide-y divide-gray-100 custom-scrollbar">
         {offers.map((offer) => (
           <button
             key={offer.id}
             onClick={() => { onClose(); onOfferClick(offer); }}
-            className="block w-full text-left px-3 py-2.5 hover:bg-white/[0.04] transition-colors"
+            className="block w-full text-left px-3 py-2.5 hover:bg-gray-50 transition-colors"
           >
-            <p className="text-sm font-medium text-white/90 truncate">
+            <p className="text-sm font-medium text-gray-900 truncate">
               {offer.request ? getRouteDisplay(offer.request.route) : "Brak trasy"}
             </p>
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-gray-500">{offer.request?.time}</span>
-              <span className="text-xs font-semibold text-brand-400">{offer.price} PLN</span>
+              <span className="text-xs font-semibold text-brand-600">{offer.price} PLN</span>
             </div>
           </button>
         ))}

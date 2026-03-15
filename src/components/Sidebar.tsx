@@ -140,7 +140,7 @@ function Tooltip({ label, children }: { label: string; children: React.ReactNode
     <div className="relative group/tooltip">
       {children}
       <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50 hidden group-hover/tooltip:block">
-        <div className="bg-gray-800 text-white text-theme-xs px-2 py-1 rounded whitespace-nowrap border border-gray-700 shadow-lg">
+        <div className="bg-gray-900 text-white text-theme-xs px-2 py-1 rounded whitespace-nowrap border border-gray-800 shadow-lg">
           {label}
         </div>
       </div>
@@ -161,18 +161,18 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
     return (
       <>
         <aside
-          className={`${collapsed ? "w-16" : "w-72"} bg-gray-900 border-r border-gray-800 h-full flex flex-col transition-all duration-200`}
+          className={`${collapsed ? "w-16" : "w-72"} bg-white border-r border-gray-200 h-full flex flex-col transition-all duration-200`}
         >
-          <div className="border-b border-gray-800 flex items-center px-4 py-3 gap-3">
+          <div className="border-b border-gray-200 flex items-center px-4 py-3 gap-2">
             {!collapsed && (
               <>
-                <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
+                <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto invert" />
                 <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
               </>
             )}
             <button
               onClick={onToggle}
-              className="ml-auto p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors shrink-0"
+              className="ml-auto p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
               title={collapsed ? "Rozwin sidebar" : "Zwij sidebar"}
             >
               <svg className={`w-4 h-4 transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,21 +198,21 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
   return (
     <aside
-      className={`${collapsed ? "w-16" : "w-72"} bg-gray-900 border-r border-gray-800 h-full flex flex-col transition-all duration-200`}
+      className={`${collapsed ? "w-16" : "w-72"} bg-white border-r border-gray-200 h-full flex flex-col transition-all duration-200`}
     >
       {/* Logo + toggle */}
-      <div className="border-b border-gray-800 flex items-center px-4 py-3 gap-3">
+      <div className="border-b border-gray-200 flex items-center px-4 py-3 gap-2 min-h-[61px]">
         {!collapsed && (
           <>
             <Link href="/">
-              <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
+              <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto invert" />
             </Link>
-            <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
+            <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest -mb-1">driver</span>
           </>
         )}
         <button
           onClick={onToggle}
-          className="ml-auto p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors shrink-0"
+          className="ml-auto p-1.5 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors shrink-0"
           title={collapsed ? "Rozwin sidebar" : "Zwij sidebar"}
         >
           <svg className={`w-4 h-4 transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -235,11 +235,11 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
                     : "gap-3.5 px-4 py-3.5 text-[1.05rem] leading-snug"
                 } ${
                   isActive
-                    ? "bg-brand-500/10 text-brand-400"
-                    : "text-gray-300 hover:bg-white/[0.03] hover:text-white"
+                    ? "bg-brand-50 text-brand-700"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                 }`}
               >
-                <span className={isActive ? "text-brand-400" : "text-gray-500"}>
+                <span className={isActive ? "text-brand-600" : "text-gray-400"}>
                   {item.icon}
                 </span>
                 {!collapsed && item.label}
@@ -269,20 +269,20 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </ul>
 
         {/* Wkrotce */}
-        <ul className="flex flex-col gap-1 mt-auto pt-4 border-t border-gray-800">
+        <ul className="flex flex-col gap-1 mt-auto pt-4 border-t border-gray-200">
           {comingSoonItems.map((item) => (
             <li key={item.label}>
               {collapsed ? (
                 <Tooltip label={`${item.label} — wkrótce`}>
                   <div className="flex justify-center p-3 rounded-lg cursor-not-allowed">
-                    <span className="text-gray-600">{item.icon}</span>
+                    <span className="text-gray-300">{item.icon}</span>
                   </div>
                 </Tooltip>
               ) : (
                 <div className="flex items-center gap-3 px-4 py-2 rounded-lg text-theme-sm cursor-not-allowed">
-                  <span className="text-gray-600">{item.icon}</span>
-                  <span className="text-gray-500">{item.label}</span>
-                  <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
+                  <span className="text-gray-300">{item.icon}</span>
+                  <span className="text-gray-400">{item.label}</span>
+                  <span className="ml-auto text-[10px] bg-gray-100 text-gray-400 px-1.5 py-0.5 rounded">
                     wkrótce
                   </span>
                 </div>

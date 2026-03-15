@@ -24,16 +24,16 @@ export function MetricCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-5">
+    <div className="rounded-2xl border border-gray-200 bg-white px-5 py-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</p>
         {icon && (
-          <div className={`flex items-center justify-center w-9 h-9 rounded-xl ${color ? ICON_COLORS[color] : "bg-white/5 text-gray-400"}`}>
+          <div className={`flex items-center justify-center w-9 h-9 rounded-xl ${color ? ICON_COLORS[color] : "bg-gray-100 text-gray-400"}`}>
             {icon}
           </div>
         )}
       </div>
-      <p className={`text-3xl font-bold tracking-tight ${color ? VALUE_COLORS[color] : "text-white"}`}>
+      <p className={`text-3xl font-bold tracking-tight ${color ? VALUE_COLORS[color] : "text-gray-900"}`}>
         {value}
       </p>
     </div>

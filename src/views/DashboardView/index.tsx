@@ -97,7 +97,7 @@ export default function DashboardView() {
     <div className="max-w-[1100px] mx-auto">
       <div className="mb-10">
         <p className="text-sm font-medium text-gray-500 mb-1">Dashboard</p>
-        <h1 className="text-2xl font-bold text-white tracking-tight">
+        <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
           Witaj, {session.user?.name}
         </h1>
       </div>
@@ -149,14 +149,14 @@ export default function DashboardView() {
         />
       </div>
 
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5 sm:p-6">
+      <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
         <div className="flex items-center gap-3 mb-5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-500/10">
-            <svg className="w-4.5 h-4.5 text-brand-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-50">
+            <svg className="w-4.5 h-4.5 text-brand-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
             </svg>
           </div>
-          <h2 className="text-base font-semibold text-white">Kalendarz zlecen</h2>
+          <h2 className="text-base font-semibold text-gray-900">Kalendarz zlecen</h2>
         </div>
         <DashboardCalendar offers={paidOffers} onOfferClick={setSelectedOffer} />
       </div>

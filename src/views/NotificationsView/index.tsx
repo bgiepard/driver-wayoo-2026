@@ -32,10 +32,12 @@ function NotificationIcon({ type }: { type: Notification["type"] }) {
   );
 }
 
-const TYPE_STYLE: Record<Notification["type"], { icon: string; dot: string }> = {
+const TYPE_STYLE: Record<string, { icon: string; dot: string }> = {
   offer_rejected: { icon: "bg-error-500/10 text-error-400", dot: "bg-error-500" },
-  new_request: { icon: "bg-info-500/10 text-info-400", dot: "bg-info-500" },
-  info: { icon: "bg-white/[0.06] text-gray-400", dot: "bg-gray-500" },
+  offer_accepted: { icon: "bg-success-500/10 text-success-400", dot: "bg-success-500" },
+  offer_paid:     { icon: "bg-brand-500/10 text-brand-400",   dot: "bg-brand-500" },
+  new_request:    { icon: "bg-info-500/10 text-info-400",     dot: "bg-info-500" },
+  info:           { icon: "bg-white/[0.06] text-gray-400",    dot: "bg-gray-500" },
 };
 
 export default function NotificationsView() {
@@ -102,7 +104,7 @@ export default function NotificationsView() {
       ) : (
         <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden divide-y divide-white/[0.04]">
           {notifications.map((n) => {
-            const style = TYPE_STYLE[n.type];
+            const style = TYPE_STYLE[n.type] ?? TYPE_STYLE.info;
             return (
               <div
                 key={n.id}
