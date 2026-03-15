@@ -73,8 +73,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
               </svg>
             </button>
             <Link href="/" className="flex items-center gap-1.5">
-              <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={100} height={26} className="h-7 w-auto invert" />
-              <span className="text-theme-xs font-medium text-gray-400 uppercase tracking-widest">driver</span>
+              <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto invert" />
+              <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
             </Link>
           </div>
 

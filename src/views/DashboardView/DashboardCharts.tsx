@@ -52,7 +52,6 @@ const STATUS_LABELS: Record<string, string> = {
   paid:     "Opłacone",
   rejected: "Odrzucone",
   canceled: "Anulowane",
-  accepted: "Zaakceptowane",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -60,7 +59,6 @@ const STATUS_COLORS: Record<string, string> = {
   paid:     BRAND,
   rejected: "#e5e7eb",
   canceled: "#e5e7eb",
-  accepted: BRAND_LIGHT,
 };
 
 function getStatusData(offers: OfferWithRequest[]) {

@@ -11,17 +11,15 @@ const PusherContext = createContext<PusherContextType | null>(null);
 
 export function PusherProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
-  const { addLocalNotification, refreshNotifications } = useNotifications();
+  const { addLocalNotification } = useNotifications();
   const subscribedChannelRef = useRef<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
 
   const addLocalNotificationRef = useRef(addLocalNotification);
-  const refreshNotificationsRef = useRef(refreshNotifications);
 
   useEffect(() => {
     addLocalNotificationRef.current = addLocalNotification;
-    refreshNotificationsRef.current = refreshNotifications;
-  }, [addLocalNotification, refreshNotifications]);
+  }, [addLocalNotification]);
 
   const driverId = (session?.user as any)?.id;
 
@@ -62,7 +60,6 @@ export function PusherProvider({ children }: { children: ReactNode }) {
         message: data.message || "Klient oplacil przejazd. Mozesz przystapic do realizacji.",
         link: "/my-offers",
       });
-      setTimeout(() => refreshNotificationsRef.current(), 500);
     });
 
     channel.bind("pusher:subscription_succeeded", () => {

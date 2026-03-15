@@ -1,6 +1,6 @@
 import type { FieldSet, Record as AirtableRecord } from "airtable";
 import { offersTable } from "@/lib/airtable";
-import { getRequestById } from "./requests";
+import { getRequestsByIds } from "./requests";
 import type { OfferData, OfferWithRequest, OfferStatus } from "@/models";
 
 export async function createOffer(
@@ -94,15 +94,16 @@ export async function getOffersByDriver(driverId: string): Promise<OfferData[]> 
 
 export async function getOffersByDriverWithRequests(driverId: string): Promise<OfferWithRequest[]> {
   const offers = await getOffersByDriver(driverId);
+  if (offers.length === 0) return [];
 
-  const offersWithRequests = await Promise.all(
-    offers.map(async (offer) => {
-      const request = await getRequestById(offer.requestId);
-      return { ...offer, request: request || undefined };
-    })
-  );
+  const requestIds = [...new Set(offers.map((o) => o.requestId).filter(Boolean))];
+  const requests = await getRequestsByIds(requestIds);
+  const requestMap = new Map(requests.map((r) => [r.id, r]));
 
-  return offersWithRequests;
+  return offers.map((offer) => ({
+    ...offer,
+    request: requestMap.get(offer.requestId),
+  }));
 }
 
 export async function getOffersByRequest(requestId: string): Promise<OfferData[]> {

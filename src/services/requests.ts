@@ -43,17 +43,19 @@ export async function getRequestById(id: string): Promise<RequestData | null> {
   }
 }
 
+const BATCH_SIZE = 50;
+
 export async function getRequestsByIds(ids: string[]): Promise<RequestData[]> {
   if (ids.length === 0) return [];
 
-  const requests: RequestData[] = [];
+  const results: RequestData[] = [];
 
-  for (const id of ids) {
-    const request = await getRequestById(id);
-    if (request) {
-      requests.push(request);
-    }
+  for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+    const chunk = ids.slice(i, i + BATCH_SIZE);
+    const formula = `OR(${chunk.map((id) => `RECORD_ID() = '${id}'`).join(",")})`;
+    const records = await requestsTable.select({ filterByFormula: formula }).all();
+    results.push(...records.map(mapRecordToRequest));
   }
 
-  return requests;
+  return results;
 }
