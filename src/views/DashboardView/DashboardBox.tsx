@@ -4,7 +4,6 @@ import { getRouteDisplay } from "@/models";
 
 export function DashboardBox({
   label,
-  title,
   offers,
   emptyText,
 }: {
