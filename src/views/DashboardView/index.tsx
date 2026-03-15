@@ -8,6 +8,7 @@ import logo from "@/assets/logo.png";
 import { MetricCard } from "./MetricCard";
 import { DashboardBox } from "./DashboardBox";
 import { DashboardCalendar } from "./DashboardCalendar";
+import { DashboardCharts } from "./DashboardCharts";
 
 export default function DashboardView() {
   const { data: session, status } = useSession();
@@ -72,7 +73,7 @@ export default function DashboardView() {
 
           <button
             onClick={() => setShowLogin(true)}
-            className="group relative inline-flex items-center justify-center px-8 py-4 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-2xl text-base transition-all duration-200 hover:shadow-[0_0_32px_rgba(22,163,74,0.3)]"
+            className="group relative inline-flex items-center justify-center px-8 py-4 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-xl text-base transition-all duration-200"
           >
             Zaloguj sie
             <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
@@ -82,7 +83,6 @@ export default function DashboardView() {
         </div>
 
         <div className="absolute bottom-8 text-xs text-gray-600">wayoo.pl</div>
-
         <LoginModal isOpen={showLogin} onClose={() => setShowLogin(false)} />
       </div>
     );
@@ -94,71 +94,90 @@ export default function DashboardView() {
   const totalRevenue = paidOffers.reduce((sum, o) => sum + o.price, 0);
 
   return (
-    <div className="max-w-[1100px] mx-auto">
-      <div className="mb-10">
-        <p className="text-sm font-medium text-gray-500 mb-1">Dashboard</p>
+    <div className="max-w-[1200px] mx-auto space-y-6">
+
+      {/* Nagłówek */}
+      <div>
+        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Dashboard</p>
         <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
           Witaj, {session.user?.name}
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <MetricCard
-          label="Zlozonych ofert"
-          value={offers.length}
-          icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-            </svg>
-          }
-        />
-        <MetricCard
-          label="Oczekujacych"
-          value={pendingOffers.length}
-          color="warning"
-          icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          }
-        />
-        <MetricCard
-          label="Przychod"
-          value={`${totalRevenue.toLocaleString("pl-PL")} PLN`}
-          color="brand"
-          icon={
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
-            </svg>
-          }
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-8">
+      {/* Rząd 1 — Oferty */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         <DashboardBox
-          title="Oczekujace"
+          label="Oferty oczekujące"
           offers={pendingOffers}
-          emptyText="Brak ofert oczekujacych"
-          badgeColor="warning"
+          emptyText="Brak ofert oczekujących na akceptację"
         />
         <DashboardBox
-          title="Oplacone"
+          label="Oferty opłacone"
           offers={paidOffers}
-          emptyText="Brak oplaconych ofert"
-          badgeColor="info"
+          emptyText="Brak opłaconych ofert"
         />
       </div>
 
-      <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6 shadow-sm">
-        <div className="flex items-center gap-3 mb-5">
-          <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-brand-50">
-            <svg className="w-4.5 h-4.5 text-brand-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-            </svg>
+      {/* Rząd 2 — Wykresy */}
+      <DashboardCharts offers={offers} />
+
+      {/* Rząd 3 — Statystyki + Kalendarz */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 items-stretch">
+
+        {/* Lewa kolumna — podsumowanie (1/3) */}
+        <div className="flex flex-col gap-3 h-full">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Podsumowanie</p>
+          <div className="flex-1 rounded-lg border border-gray-200 bg-white shadow-sm divide-y divide-gray-100">
+            {[
+              {
+                label: "Złożonych ofert",
+                value: offers.length,
+                icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                  </svg>
+                ),
+              },
+              {
+                label: "Oczekujących",
+                value: pendingOffers.length,
+                icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                ),
+              },
+              {
+                label: "Przychód",
+                value: `${totalRevenue.toLocaleString("pl-PL")} PLN`,
+                icon: (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+                  </svg>
+                ),
+              },
+            ].map(({ label, value, icon }) => (
+              <div key={label} className="flex items-center justify-between px-5 py-5">
+                <div>
+                  <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">{label}</p>
+                  <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
+                </div>
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-500 shrink-0">
+                  {icon}
+                </div>
+              </div>
+            ))}
           </div>
-          <h2 className="text-base font-semibold text-gray-900">Kalendarz zlecen</h2>
         </div>
-        <DashboardCalendar offers={paidOffers} onOfferClick={setSelectedOffer} />
+
+        {/* Prawa kolumna — Kalendarz (2/3) */}
+        <div className="lg:col-span-2 flex flex-col gap-3">
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">Harmonogram</p>
+          <div className="flex-1 rounded-lg border border-gray-200 bg-white shadow-sm p-5">
+            <DashboardCalendar offers={offers} onOfferClick={setSelectedOffer} />
+          </div>
+        </div>
+
       </div>
 
       {selectedOffer && (

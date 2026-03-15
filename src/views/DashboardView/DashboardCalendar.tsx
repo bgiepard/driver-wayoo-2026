@@ -18,7 +18,7 @@ export function DashboardCalendar({
 }) {
   const [activeDay, setActiveDay] = useState<string | null>(null);
   const today = new Date();
-  const months = [0, 1, 2].map((offset) => {
+  const months = [0, 1].map((offset) => {
     const date = new Date(today.getFullYear(), today.getMonth() + offset, 1);
     return { month: date.getMonth(), year: date.getFullYear() };
   });
@@ -33,9 +33,9 @@ export function DashboardCalendar({
   });
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {months.map(({ month, year }) => (
-        <div key={`${year}-${month}`} className="rounded-xl bg-gray-50 border border-gray-100 p-4">
+        <div key={`${year}-${month}`} className="rounded-lg bg-gray-50 border border-gray-100 p-4">
           <MonthCalendar
             month={month}
             year={year}
@@ -113,15 +113,15 @@ function MonthCalendar({
                 onClick={() => handleDayClick(day, hasOffers)}
                 className={`
                   relative py-1 text-sm rounded-lg transition-all duration-150
-                  ${isTodayDate ? "bg-brand-500 text-white font-bold" : ""}
-                  ${hasOffers && !isTodayDate ? "bg-brand-50 text-brand-700 font-medium cursor-pointer hover:bg-brand-100" : ""}
+                  ${isTodayDate ? "border-2 border-brand-500 text-brand-600 font-bold" : ""}
+                  ${hasOffers && !isTodayDate ? "bg-brand-50 text-brand-600 font-semibold cursor-pointer hover:bg-brand-100" : ""}
                   ${!hasOffers && !isTodayDate ? "text-gray-500" : ""}
-                  ${isActive ? "ring-2 ring-brand-400/60" : ""}
+                  ${isActive ? "ring-2 ring-brand-300" : ""}
                 `}
               >
                 {day}
                 {hasOffers && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-500 text-white text-[10px] rounded-full flex items-center justify-center font-semibold">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-brand-500 text-white text-[10px] rounded-full flex items-center justify-center font-semibold leading-none">
                     {dayOffers.length}
                   </span>
                 )}
@@ -157,7 +157,7 @@ function DayTooltip({
   };
 
   return (
-    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-xl border border-gray-200 bg-white shadow-lg">
+    <div className="absolute z-50 top-full left-1/2 -translate-x-1/2 mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg">
       <div className="flex justify-between items-center px-3 py-2.5 border-b border-gray-100">
         <span className="text-xs font-semibold text-gray-700">
           {formatDate(dateStr)} &middot; {offers.length} {offers.length === 1 ? "przejazd" : "przejazdy"}
