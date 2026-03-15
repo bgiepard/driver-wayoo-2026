@@ -36,20 +36,17 @@ export async function createOffer(
 }
 
 function getDriverIdFromRecord(record: AirtableRecord<FieldSet>): string {
-  // Może być linked record (tablica) lub tekst
   const driverLinks = record.get("Driver");
 
   if (Array.isArray(driverLinks)) {
     return driverLinks[0] || "";
   }
 
-  // Może być polem tekstowym "driverId"
   const driverIdText = record.get("driverId") as string | undefined;
   if (driverIdText) {
     return driverIdText;
   }
 
-  // Lub Driver jako tekst
   if (typeof driverLinks === "string") {
     return driverLinks;
   }
@@ -76,37 +73,23 @@ function getRequestIdFromRecord(record: AirtableRecord<FieldSet>): string {
   return "";
 }
 
+function mapRecordToOffer(record: AirtableRecord<FieldSet>): OfferData {
+  return {
+    id: record.id,
+    requestId: getRequestIdFromRecord(record),
+    driverId: getDriverIdFromRecord(record),
+    vehicleId: (record.get("vehicleId") as string) || undefined,
+    price: record.get("price") as number,
+    message: (record.get("message") as string) || "",
+    status: (record.get("status") as OfferStatus) || "new",
+  };
+}
+
 export async function getOffersByDriver(driverId: string): Promise<OfferData[]> {
-  console.log("[getOffersByDriver] Looking for offers by driver:", driverId);
-
   const allRecords = await offersTable.select().all();
-  console.log("[getOffersByDriver] Total offers in table:", allRecords.length);
-
-  const offers: OfferData[] = [];
-
-  for (const record of allRecords) {
-    const recordDriverId = getDriverIdFromRecord(record);
-    const recordRequestId = getRequestIdFromRecord(record);
-
-    console.log("[getOffersByDriver] Record:", record.id, "Driver:", recordDriverId, "Request:", recordRequestId);
-
-    // Sprawdź czy ta oferta należy do tego kierowcy
-    if (recordDriverId === driverId) {
-      console.log("[getOffersByDriver] Match found!");
-      offers.push({
-        id: record.id,
-        requestId: recordRequestId,
-        driverId: recordDriverId,
-        vehicleId: (record.get("vehicleId") as string) || undefined,
-        price: record.get("price") as number,
-        message: (record.get("message") as string) || "",
-        status: (record.get("status") as OfferStatus) || "new",
-      });
-    }
-  }
-
-  console.log("[getOffersByDriver] Found offers:", offers.length);
-  return offers;
+  return allRecords
+    .filter((record) => getDriverIdFromRecord(record) === driverId)
+    .map(mapRecordToOffer);
 }
 
 export async function getOffersByDriverWithRequests(driverId: string): Promise<OfferWithRequest[]> {
@@ -124,27 +107,9 @@ export async function getOffersByDriverWithRequests(driverId: string): Promise<O
 
 export async function getOffersByRequest(requestId: string): Promise<OfferData[]> {
   const allRecords = await offersTable.select().all();
-
-  const offers: OfferData[] = [];
-
-  for (const record of allRecords) {
-    const recordRequestId = getRequestIdFromRecord(record);
-    const recordDriverId = getDriverIdFromRecord(record);
-
-    if (recordRequestId === requestId) {
-      offers.push({
-        id: record.id,
-        requestId: recordRequestId,
-        driverId: recordDriverId,
-        vehicleId: (record.get("vehicleId") as string) || undefined,
-        price: record.get("price") as number,
-        message: (record.get("message") as string) || "",
-        status: (record.get("status") as OfferStatus) || "new",
-      });
-    }
-  }
-
-  return offers;
+  return allRecords
+    .filter((record) => getRequestIdFromRecord(record) === requestId)
+    .map(mapRecordToOffer);
 }
 
 export async function hasDriverOfferedOnRequest(

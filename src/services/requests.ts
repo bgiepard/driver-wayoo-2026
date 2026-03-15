@@ -20,11 +20,14 @@ function mapRecordToRequest(record: AirtableRecord<FieldSet>): RequestData {
   };
 }
 
+const PAGE_SIZE = 100;
+
 export async function getAvailableRequests(): Promise<RequestData[]> {
   const records = await requestsTable
     .select({
       filterByFormula: `{status} = 'published'`,
       sort: [{ field: "Created", direction: "desc" }],
+      maxRecords: PAGE_SIZE,
     })
     .all();
 

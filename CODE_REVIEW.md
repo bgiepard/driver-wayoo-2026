@@ -19,6 +19,11 @@ Ostatnia aktualizacja: 2026-03-15
 | `MyOffersView` rozbity na pod-komponenty | `OfferCard` |
 | `OfferDetailsModal` importuje `STATUS_CONFIG` z `@/constants/offerStatus` | `src/components/OfferDetailsModal.tsx` |
 | `Header` importuje `formatNotificationTime` z `@/utils/formatTime` | `src/components/Header.tsx` |
+| `console.log` usunięte z `getOffersByDriver` | `src/services/offers.ts` |
+| Email escapowany przed wstrzyknięciem do formuły Airtable | `src/services/drivers.ts` |
+| `Footer.tsx` usunięty (nieużywany) | `src/components/Footer.tsx` |
+| `tailadmin/` usunięty (pusty szablon) | `src/tailadmin/` |
+| `getAvailableRequests` — dodano `maxRecords: 100` | `src/services/requests.ts` |
 
 ---
 
@@ -27,54 +32,32 @@ Ostatnia aktualizacja: 2026-03-15
 ### Priorytet: WYSOKI
 
 #### 1. `services/offers.ts` — filtrowanie całej tabeli w pamięci
-```ts
-// Pobiera WSZYSTKIE rekordy Airtable, filtruje w JS
-const allRecords = await offersTable.select().all();
-for (const record of allRecords) {
-  if (recordDriverId === driverId) { ... }
-}
-```
-Powinno: `offersTable.select({ filterByFormula: `{driverId} = "${driverId}"` }).all()`
-
-#### 2. `services/drivers.ts` — injection w filterByFormula
-```ts
-// Niebezpieczne — email z zewnątrz wstrzykiwany do formuły
-filterByFormula: `{email} = '${email}'`
-```
-Airtable nie ma prepared statements, ale przynajmniej należy uciec cudzysłowy w emailu przed wstrzyknięciem.
+`getOffersByDriver` i `getOffersByRequest` pobierają WSZYSTKIE rekordy Airtable i filtrują w JS.
+Próba użycia `ARRAYJOIN({Driver})` w `filterByFormula` nie zadziałała z linked record fields — wymaga dalszego zbadania struktury danych w Airtable.
 
 ---
 
 ### Priorytet: ŚREDNI
 
-#### 3. `Header.tsx` — niekompatybilny styl
+#### 1. `Header.tsx` — niekompatybilny styl
 `Header.tsx` ma biało-zielony motyw (`bg-white`, `text-green-600`) niezgodny z ciemnym motywem całej aplikacji. `Sidebar.tsx` jest już w ciemnym motywie. Header wymaga przeprojektowania.
 
-#### 4. `Header.tsx` — `window.location.href` zamiast Next.js routera
+#### 2. `Header.tsx` — `window.location.href` zamiast Next.js routera
 ```ts
 // src/components/Header.tsx:118
 window.location.href = notification.link;
 ```
 Powinno używać `useRouter()` z next/router.
 
-#### 5. `NotificationsContext.tsx` — console.logi w produkcji
+#### 3. `NotificationsContext.tsx` — console.logi w produkcji
 Trzy `console.log` do usunięcia lub zastąpienia warunkowym logowaniem.
 
 ---
 
 ### Priorytet: NISKI
 
-#### 6. `components/Footer.tsx` — nieużywany komponent
-Nie jest importowany na żadnej stronie. Można usunąć.
-
-#### 7. `views/TripHistoryView/` — mock data
-Historia przejazdów opiera się na hardkodowanej tablicy `MOCK_TRIPS`. Brak integracji z backendem.
-
-#### 8. `tailadmin/` — nieużywany folder szablonu
-Katalog `src/tailadmin/` zawiera pusty szablon TailAdmin bez plików `.ts/.tsx`. Można usunąć.
-
-#### 9. `services/requests.ts` — brak paginacji
-`getAvailableRequests()` pobiera wszystkie published requests bez limitu.
+#### 1. `views/TripHistoryView/` — mock data
+Historia przejazdów opiera się na hardkodowanej tablicy `MOCK_TRIPS`. Brak integracji z backendem. Wymaga zaprojektowania tabeli "Trips" w Airtable.
 
 ---
 

@@ -15,9 +15,10 @@ function mapRecordToDriver(record: AirtableRecord<FieldSet>): Driver {
 }
 
 export async function findDriverByEmail(email: string): Promise<Driver | null> {
+  const safeEmail = email.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
   const records = await driversTable
     .select({
-      filterByFormula: `{email} = '${email}'`,
+      filterByFormula: `{email} = '${safeEmail}'`,
       maxRecords: 1,
     })
     .firstPage();

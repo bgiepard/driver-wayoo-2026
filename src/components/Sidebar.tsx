@@ -128,15 +128,6 @@ const navItems: NavItem[] = [
       </svg>
     ),
   },
-  {
-    href: "/account",
-    label: "Konto",
-    icon: (
-      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-      </svg>
-    ),
-  },
 ];
 
 interface SidebarProps {
@@ -301,36 +292,6 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
         </ul>
       </nav>
 
-      {/* Profil + przycisk zwijania */}
-      <div className="border-t border-gray-800">
-        {collapsed ? (
-          <div className="p-2 flex justify-center">
-            <Tooltip label={`${session.user?.name || "Kierowca"} — ${session.user?.email}`}>
-              <div className="w-8 h-8 bg-brand-500/10 rounded-full flex items-center justify-center">
-                <span className="text-brand-400 text-theme-sm font-medium">
-                  {session.user?.name?.charAt(0).toUpperCase() || "K"}
-                </span>
-              </div>
-            </Tooltip>
-          </div>
-        ) : (
-          <div className="p-4 flex items-center gap-3">
-            <div className="w-8 h-8 bg-brand-500/10 rounded-full flex items-center justify-center shrink-0">
-              <span className="text-brand-400 text-theme-sm font-medium">
-                {session.user?.name?.charAt(0).toUpperCase() || "K"}
-              </span>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-theme-sm font-medium text-white/90 truncate">
-                {session.user?.name || "Kierowca"}
-              </p>
-              <p className="text-theme-xs text-gray-400 truncate">
-                {session.user?.email}
-              </p>
-            </div>
-          </div>
-        )}
-      </div>
     </aside>
   );
 }
