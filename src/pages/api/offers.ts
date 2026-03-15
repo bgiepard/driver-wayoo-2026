@@ -31,8 +31,15 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
-      const offers = await getOffersByDriverWithRequests(driverId);
-      return res.status(200).json(offers);
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100);
+      const status = req.query.status as string | undefined;
+
+      const all = await getOffersByDriverWithRequests(driverId);
+      const filtered = status ? all.filter((o) => o.status === status) : all;
+      const hasMore = filtered.length > limit;
+      const offers = filtered.slice(0, limit);
+
+      return res.status(200).json({ offers, hasMore });
     } catch {
       return res.status(500).json({ error: "Failed to fetch offers" });
     }

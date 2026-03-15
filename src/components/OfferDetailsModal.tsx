@@ -28,30 +28,26 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
 
-      {/* Modal */}
-      <div className="relative w-full max-w-2xl mx-4 rounded-2xl border border-white/[0.08] bg-gray-900 shadow-2xl max-h-[90vh] flex flex-col">
+      <div className="relative w-full max-w-2xl mx-4 rounded-xl border border-gray-200 bg-white shadow-2xl max-h-[90vh] flex flex-col">
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-white/[0.06] shrink-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-500/10">
-              <svg className="w-5 h-5 text-brand-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+            <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-brand-50">
+              <svg className="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
               </svg>
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-tight">Szczegoly zlecenia</h2>
-              <p className="text-xs text-gray-500 mt-0.5">ID: {offer.requestId.slice(-8)}</p>
+              <h2 className="text-base font-bold text-gray-900">Szczegóły zlecenia</h2>
+              <p className="text-xs text-gray-400 mt-0.5">ID: {offer.requestId.slice(-8)}</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-500 hover:text-gray-300 hover:bg-white/[0.06] transition-colors"
+            className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -61,62 +57,58 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
 
         {/* Content */}
         <div className="overflow-y-auto flex-1 custom-scrollbar">
-          <div className="px-6 py-5 space-y-5">
+          <div className="px-6 py-5 space-y-4">
 
             {/* Status + cena */}
             <div className="flex items-center justify-between">
-              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg border ${cfg.badge}`}>
+              <span className={`inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md border ${cfg.badge}`}>
                 <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
                 {cfg.label}
               </span>
               <div className="text-right">
-                <p className="text-xs text-gray-500">Twoja oferta</p>
-                <p className="text-2xl font-bold text-white">{offer.price} <span className="text-sm font-medium text-gray-400">PLN</span></p>
+                <p className="text-xs text-gray-400">Twoja oferta</p>
+                <p className="text-2xl font-bold text-gray-900">{offer.price} <span className="text-sm font-medium text-gray-400">PLN</span></p>
               </div>
             </div>
 
             {/* Mapa */}
             {route && (
-              <div className="rounded-xl overflow-hidden border border-white/[0.06]">
+              <div className="rounded-lg overflow-hidden border border-gray-200">
                 <RouteMap route={route} height="200px" />
               </div>
             )}
 
             {/* Trasa */}
             {route && (
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-4">Trasa</h3>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-4">Trasa</h3>
                 <div className="relative pl-6">
-                  {/* Linia pionowa */}
-                  <div className="absolute left-[7px] top-2 bottom-2 w-px bg-white/[0.08]" />
+                  <div className="absolute left-[7px] top-2 bottom-2 w-px bg-gray-200" />
 
-                  {/* Start */}
                   <div className="relative mb-4">
-                    <div className="absolute -left-6 top-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 ring-4 ring-gray-900" />
-                    <p className="text-sm font-medium text-white">{route.origin.address}</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Start</p>
+                    <div className="absolute -left-6 top-0.5 w-3.5 h-3.5 rounded-full bg-brand-500 ring-4 ring-gray-50" />
+                    <p className="text-sm font-medium text-gray-900">{route.origin.address}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Start</p>
                   </div>
 
-                  {/* Przystanki */}
                   {route.waypoints.map((wp, i) => (
                     <div key={i} className="relative mb-4">
-                      <div className="absolute -left-6 top-0.5 w-3.5 h-3.5 rounded-full bg-info-400 ring-4 ring-gray-900" />
-                      <p className="text-sm font-medium text-white">{wp.address}</p>
-                      <p className="text-xs text-gray-600 mt-0.5">Przystanek {i + 1}</p>
+                      <div className="absolute -left-6 top-0.5 w-3.5 h-3.5 rounded-full bg-blue-400 ring-4 ring-gray-50" />
+                      <p className="text-sm font-medium text-gray-900">{wp.address}</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Przystanek {i + 1}</p>
                     </div>
                   ))}
 
-                  {/* Cel */}
                   <div className="relative">
-                    <div className="absolute -left-6 top-0.5 w-3.5 h-3.5 rounded-full bg-error-400 ring-4 ring-gray-900" />
-                    <p className="text-sm font-medium text-white">{route.destination.address}</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Cel</p>
+                    <div className="absolute -left-6 top-0.5 w-3.5 h-3.5 rounded-full bg-red-400 ring-4 ring-gray-50" />
+                    <p className="text-sm font-medium text-gray-900">{route.destination.address}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">Cel</p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Grid: data, czas, pasazerowie */}
+            {/* Grid: data, czas, pasażerowie */}
             <div className="grid grid-cols-3 gap-3">
               <InfoTile
                 label="Data"
@@ -137,7 +129,7 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
                 }
               />
               <InfoTile
-                label="Pasazerowie"
+                label="Pasażerowie"
                 value={`${request?.adults || 0} dos.${request?.children ? ` + ${request.children} dz.` : ""}`}
                 icon={
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
@@ -149,15 +141,12 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
 
             {/* Opcje */}
             {options.length > 0 && (
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-3">Wymagane opcje</h3>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Wymagane opcje</h3>
                 <div className="flex flex-wrap gap-2">
                   {options.map((opt) => (
-                    <span
-                      key={opt}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium bg-white/[0.04] border border-white/[0.08] text-gray-300 px-3 py-1.5 rounded-lg"
-                    >
-                      <svg className="w-3 h-3 text-brand-400" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                    <span key={opt} className="inline-flex items-center gap-1.5 text-xs font-medium bg-white border border-gray-200 text-gray-600 px-2.5 py-1.5 rounded-md">
+                      <svg className="w-3 h-3 text-brand-500" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
                       </svg>
                       {opt}
@@ -167,21 +156,21 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
               </div>
             )}
 
-            {/* Wiadomosc */}
+            {/* Wiadomość */}
             {offer.message && (
-              <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-5">
-                <h3 className="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Twoja wiadomosc</h3>
-                <p className="text-sm text-gray-300 leading-relaxed">{offer.message}</p>
+              <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                <h3 className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-2">Twoja wiadomość</h3>
+                <p className="text-sm text-gray-700 leading-relaxed italic">„{offer.message}"</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-white/[0.06] shrink-0">
+        <div className="px-6 py-4 border-t border-gray-100 shrink-0">
           <button
             onClick={onClose}
-            className="w-full py-2.5 rounded-xl bg-white/[0.06] hover:bg-white/[0.1] text-sm font-medium text-gray-300 transition-colors"
+            className="w-full py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors"
           >
             Zamknij
           </button>
@@ -191,18 +180,14 @@ export default function OfferDetailsModal({ offer, onClose }: OfferDetailsModalP
   );
 }
 
-/* ============================================
-   INFO TILE
-   ============================================ */
-
 function InfoTile({ label, value, icon }: { label: string; value: string; icon: React.ReactNode }) {
   return (
-    <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <span className="text-gray-500">{icon}</span>
-        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</span>
+    <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-gray-400">{icon}</span>
+        <span className="text-xs font-medium text-gray-400 uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-sm font-semibold text-white">{value}</p>
+      <p className="text-sm font-semibold text-gray-900">{value}</p>
     </div>
   );
 }

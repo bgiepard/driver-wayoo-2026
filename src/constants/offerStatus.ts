@@ -2,23 +2,23 @@ import type { OfferStatus } from "@/models";
 
 export const STATUS_CONFIG: Record<OfferStatus, { label: string; dot: string; badge: string }> = {
   new: {
-    label: "Oczekuje na akceptacje",
-    dot: "bg-warning-400",
-    badge: "bg-warning-500/10 text-warning-400 border-warning-500/20",
+    label: "Oczekuje",
+    dot: "bg-amber-400",
+    badge: "bg-amber-50 text-amber-700 border-amber-200",
   },
   paid: {
-    label: "Oplacona",
-    dot: "bg-info-400",
-    badge: "bg-info-500/10 text-info-400 border-info-500/20",
+    label: "Opłacona",
+    dot: "bg-brand-500",
+    badge: "bg-brand-50 text-brand-700 border-brand-200",
   },
   canceled: {
     label: "Anulowana",
     dot: "bg-gray-400",
-    badge: "bg-white/5 text-gray-400 border-white/10",
+    badge: "bg-gray-100 text-gray-500 border-gray-200",
   },
   rejected: {
     label: "Odrzucona",
-    dot: "bg-error-400",
-    badge: "bg-error-500/10 text-error-400 border-error-500/20",
+    dot: "bg-red-400",
+    badge: "bg-red-50 text-red-600 border-red-200",
   },
 };

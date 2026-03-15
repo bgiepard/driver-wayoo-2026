@@ -1,9 +1,11 @@
 import { createContext, useContext, useState, useCallback, ReactNode, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 
+const PAGE_SIZE = 7;
+
 export interface Notification {
   id: string;
-  type: "offer_rejected" | "new_request" | "info";
+  type: "offer_rejected" | "new_request" | "offer_paid" | "info";
   title: string;
   message: string;
   link?: string;
@@ -14,112 +16,109 @@ export interface Notification {
 interface NotificationsContextType {
   notifications: Notification[];
   unreadCount: number;
-  addNotification: (notification: Omit<Notification, "id" | "read" | "createdAt">) => void;
+  hasMore: boolean;
+  isLoading: boolean;
+  isLoadingMore: boolean;
+  loadMore: () => Promise<void>;
   addLocalNotification: (notification: Omit<Notification, "id" | "read" | "createdAt">) => void;
   markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  clearAll: () => void;
+  markAllAsRead: () => Promise<void>;
+  deleteNotification: (id: string) => Promise<void>;
   refreshNotifications: () => Promise<void>;
-  isLoading: boolean;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | null>(null);
 
+function mapRaw(n: { id: string; type: string; title: string; message: string; link?: string; read: boolean; createdAt: string }): Notification {
+  return {
+    id: n.id,
+    type: n.type as Notification["type"],
+    title: n.title,
+    message: n.message,
+    link: n.link,
+    read: n.read,
+    createdAt: new Date(n.createdAt),
+  };
+}
+
 export function NotificationsProvider({ children }: { children: ReactNode }) {
   const { data: session, status } = useSession();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [fetchLimit, setFetchLimit] = useState(PAGE_SIZE);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const hasFetched = useRef(false);
 
-  const fetchNotifications = useCallback(async () => {
+  const fetchNotifications = useCallback(async (limit: number, append = false) => {
     if (!session?.user) return;
 
-    setIsLoading(true);
+    if (append) {
+      setIsLoadingMore(true);
+    } else {
+      setIsLoading(true);
+    }
+
     try {
-      const res = await fetch("/api/notifications");
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(
-          data.map((n: { id: string; type: string; title: string; message: string; link?: string; read: boolean; createdAt: string }) => ({
-            id: n.id,
-            type: n.type,
-            title: n.title,
-            message: n.message,
-            link: n.link,
-            read: n.read,
-            createdAt: new Date(n.createdAt),
-          }))
-        );
+      const res = await fetch(`/api/notifications?limit=${limit}`);
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const fetched: Notification[] = data.notifications.map(mapRaw);
+
+      if (append) {
+        // Dołącz tylko nowe (dedup po id)
+        setNotifications((prev) => {
+          const existingIds = new Set(prev.map((n) => n.id));
+          const newOnes = fetched.filter((n) => !existingIds.has(n.id));
+          return [...prev, ...newOnes];
+        });
+      } else {
+        setNotifications(fetched);
       }
+
+      setHasMore(data.hasMore);
     } catch (error) {
       console.error("Error fetching notifications:", error);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   }, [session?.user]);
 
+  // Pierwsze załadowanie
   useEffect(() => {
     if (status === "authenticated" && session?.user && !hasFetched.current) {
       hasFetched.current = true;
-      fetchNotifications();
+      fetchNotifications(PAGE_SIZE);
     }
-
     if (status === "unauthenticated") {
       hasFetched.current = false;
       setNotifications([]);
+      setHasMore(false);
+      setFetchLimit(PAGE_SIZE);
     }
   }, [status, session?.user, fetchNotifications]);
 
-  // Dodaje powiadomienie lokalnie i zapisuje do bazy
-  const addNotification = useCallback(
-    async (notification: Omit<Notification, "id" | "read" | "createdAt">) => {
-      const tempId = `temp-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      const newNotification: Notification = {
-        ...notification,
-        id: tempId,
-        read: false,
-        createdAt: new Date(),
-      };
-      setNotifications((prev) => [newNotification, ...prev].slice(0, 50));
+  const loadMore = useCallback(async () => {
+    const nextLimit = fetchLimit + PAGE_SIZE;
+    setFetchLimit(nextLimit);
+    await fetchNotifications(nextLimit, true);
+  }, [fetchLimit, fetchNotifications]);
 
-      if (session?.user) {
-        try {
-          const res = await fetch("/api/notifications", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(notification),
-          });
+  const refreshNotifications = useCallback(async () => {
+    await fetchNotifications(fetchLimit);
+  }, [fetchLimit, fetchNotifications]);
 
-          if (res.ok) {
-            const saved = await res.json();
-            setNotifications((prev) =>
-              prev.map((n) =>
-                n.id === tempId
-                  ? { ...n, id: saved.id, createdAt: new Date(saved.createdAt) }
-                  : n
-              )
-            );
-          }
-        } catch (error) {
-          console.error("Error saving notification:", error);
-        }
-      }
-    },
-    [session?.user]
-  );
-
-  // Dodaje powiadomienie TYLKO lokalnie (bez zapisu do bazy)
-  // Uzywane przez Pusher - powiadomienie jest juz zapisane przez nadawce
   const addLocalNotification = useCallback(
     (notification: Omit<Notification, "id" | "read" | "createdAt">) => {
-      const tempId = `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const newNotification: Notification = {
         ...notification,
-        id: tempId,
+        id: `local-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         read: false,
         createdAt: new Date(),
       };
-      setNotifications((prev) => [newNotification, ...prev].slice(0, 50));
+      setNotifications((prev) => [newNotification, ...prev]);
     },
     []
   );
@@ -132,25 +131,26 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
 
   const markAllAsRead = useCallback(async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-
-    if (session?.user) {
-      try {
-        await fetch("/api/notifications", {
-          method: "PATCH",
-        });
-      } catch (error) {
-        console.error("Error marking notifications as read:", error);
-      }
+    try {
+      await fetch("/api/notifications", { method: "PATCH" });
+    } catch (error) {
+      console.error("Error marking notifications as read:", error);
     }
-  }, [session?.user]);
-
-  const clearAll = useCallback(() => {
-    setNotifications([]);
   }, []);
 
-  const refreshNotifications = useCallback(async () => {
-    await fetchNotifications();
-  }, [fetchNotifications]);
+  const deleteNotification = useCallback(async (id: string) => {
+    // Optimistic update
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+    // Lokalnych powiadomień (z Pusher) nie usuwamy z API
+    if (id.startsWith("local-")) return;
+
+    try {
+      await fetch(`/api/notifications?id=${id}`, { method: "DELETE" });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+    }
+  }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
@@ -159,13 +159,15 @@ export function NotificationsProvider({ children }: { children: ReactNode }) {
       value={{
         notifications,
         unreadCount,
-        addNotification,
+        hasMore,
+        isLoading,
+        isLoadingMore,
+        loadMore,
         addLocalNotification,
         markAsRead,
         markAllAsRead,
-        clearAll,
+        deleteNotification,
         refreshNotifications,
-        isLoading,
       }}
     >
       {children}

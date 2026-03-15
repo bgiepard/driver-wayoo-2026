@@ -27,9 +27,9 @@ export default function DashboardView() {
 
   const fetchOffers = async () => {
     try {
-      const res = await fetch("/api/offers");
+      const res = await fetch("/api/offers?limit=100");
       const data = await res.json();
-      setOffers(data);
+      setOffers(data.offers ?? data);
     } catch (error) {
       console.error("Error fetching offers:", error);
     } finally {
