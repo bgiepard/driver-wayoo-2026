@@ -31,18 +31,82 @@ Obie aplikacje współdzielą bazę Airtable i kanały Pusher, ale mają osobne 
 
 ```
 src/
-├── pages/           # Strony i API routes (Next.js Pages Router)
+├── pages/           # CIENKIE wrappery — tylko import i export widoku
 │   ├── api/         # Endpointy REST (auth, requests, offers, vehicles, upload)
-│   └── ...          # Strony UI
-├── components/      # Komponenty React (DashboardLayout, Sidebar, mapy, modale)
+│   ├── index.tsx    # → <DashboardView />
+│   ├── zlecenia.tsx # → <ZleceniaView />
+│   └── ...          # każda strona = 4 linie
+│
+├── views/           # CAŁA logika i UI stron — tutaj pracuj przy zmianach stron
+│   ├── DashboardView/
+│   │   ├── index.tsx          # główny widok dashboardu
+│   │   ├── MetricCard.tsx     # karta metryki (oferty, przychód)
+│   │   ├── DashboardBox.tsx   # box z listą ofert (oczekujące/opłacone)
+│   │   └── DashboardCalendar.tsx  # kalendarz zlecen (3 miesiące)
+│   ├── ZleceniaView/
+│   │   └── index.tsx          # lista zleceń + mapa + formularz oferty
+│   ├── MyOffersView/
+│   │   ├── index.tsx          # lista ofert z filtrami po statusie
+│   │   └── OfferCard.tsx      # karta jednej oferty
+│   ├── MyFleetView/
+│   │   ├── index.tsx          # zarządzanie flotą (lista + lightbox)
+│   │   ├── VehicleCard.tsx    # karta pojazdu w gridzie
+│   │   └── VehicleFormModal.tsx  # modal dodawania/edycji pojazdu
+│   ├── NotificationsView/
+│   │   └── index.tsx          # lista powiadomień
+│   ├── AccountView/
+│   │   └── index.tsx          # dane konta + wylogowanie
+│   ├── TripHistoryView/
+│   │   └── index.tsx          # historia przejazdów (mock data)
+│   └── BusinessCardView/
+│       └── index.tsx          # wizytówka kierowcy (localStorage)
+│
+├── components/      # Komponenty współdzielone między widokami
+│   ├── DashboardLayout.tsx    # główny layout z sidebarem
+│   ├── Sidebar.tsx            # nawigacja boczna
+│   ├── Header.tsx             # nagłówek (stary styl — do odświeżenia)
+│   ├── LoginModal.tsx         # modal logowania/rejestracji
+│   ├── OfferDetailsModal.tsx  # modal szczegółów oferty
+│   ├── RouteMap.tsx           # mapa jednej trasy
+│   ├── AllRoutesMap.tsx       # mapa wszystkich tras
+│   ├── LocationFilter.tsx     # filtr lokalizacji z mapą
+│   ├── Footer.tsx             # nieużywany
+│   ├── icons/                 # GoogleIcon
+│   └── ui/
+│       ├── Card.tsx
+│       ├── Badge.tsx
+│       └── Typography.tsx     # PageTitle, PageSubtitle
+│
+├── constants/       # Stałe współdzielone — DODAJ TU nowe stałe
+│   └── offerStatus.ts  # STATUS_CONFIG dla statusów oferty (new/paid/canceled/rejected)
+│
+├── utils/           # Funkcje pomocnicze — DODAJ TU nowe utility
+│   └── formatTime.ts   # formatTimeAgo() i formatNotificationTime()
+│
 ├── services/        # Warstwa logiki biznesowej (komunikacja z Airtable)
-├── lib/             # Konfiguracja zewnętrznych serwisów (airtable.ts, pusher.ts)
-├── models/          # Interfejsy TypeScript (odpowiadają tabelom Airtable)
-├── context/         # React Context (NotificationsContext, PusherContext)
-└── styles/          # Tailwind CSS
+│   ├── index.ts
+│   ├── requests.ts  # getAvailableRequests, getRequestById
+│   ├── offers.ts    # createOffer, getOffersByDriver — UWAGA: filtruje w pamięci (do poprawki)
+│   └── drivers.ts   # findDriverByEmail, createDriver — UWAGA: injection w filterByFormula
+│
+├── context/         # React Context
+│   ├── NotificationsContext.tsx  # stan powiadomień + API /api/notifications
+│   └── PusherContext.tsx         # real-time WebSocket
+│
+├── models/          # Interfejsy TypeScript + helpery
+│   └── index.ts    # Driver, RequestData, OfferData, Vehicle, Route + parseRoute(), getRouteDisplay()
+│
+├── lib/             # Konfiguracja zewnętrznych serwisów
+│   ├── airtable.ts
+│   ├── pusher.ts
+│   ├── pusher-client.ts
+│   └── mapStyles.ts
+│
+└── data/
+    └── vehicleBrands.ts  # lista marek i modeli pojazdów
 ```
 
-Przepływ danych: **Pages → Services → Lib (Airtable/Pusher) → Baza danych**
+Przepływ danych: **pages/ (wrapper) → views/ (logika UI) → fetch() → api/ → services/ → lib/ (Airtable/Pusher)**
 
 ## Kluczowe modele danych
 
@@ -72,7 +136,7 @@ Wyposażenie: WiFi, WC, TV, klimatyzacja, gniazdka, bagażnik
 
 ## Real-time (Pusher)
 
-- Kanał: `request-{requestId}` — subskrypcja na zdarzenia dotyczące zlecenia
+- Kanał: `driver-{driverId}` — subskrypcja na zdarzenia kierowcy
 - Eventy: `new-offer`, `offer-accepted`, `offer-paid`
 - Konteksty React: `PusherContext` (połączenie WS), `NotificationsContext` (stan powiadomień)
 
@@ -95,3 +159,15 @@ CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 - Dane w Airtable przechowują route i options jako **JSON stringi** — wymagają JSON.parse
 - Package manager: **yarn**
 - Aplikacja używa **Pages Router** (katalog `src/pages/`), NIE App Router
+- Strony w `pages/` to **cieniutkie wrappery** — cała logika jest w `views/`
+- Statusy oferty i ich style → `src/constants/offerStatus.ts`
+- Formatowanie czasu → `src/utils/formatTime.ts`
+
+## Znane problemy techniczne (do poprawki)
+
+- `services/offers.ts` — filtruje wszystkie rekordy w pamięci zamiast używać `filterByFormula` po stronie Airtable
+- `services/drivers.ts` — injection w `filterByFormula: \`{email} = '${email}'\``
+- `components/OfferDetailsModal.tsx` — ma własną kopię `STATUS_CONFIG` (nie używa `constants/offerStatus.ts`)
+- `components/Header.tsx` — ma własną kopię `formatTime` (nie używa `utils/formatTime.ts`) + stary biały styl niekompatybilny z ciemnym motywem UI
+- `views/TripHistoryView/` — oparta na mock data, brak integracji z backendem
+- `components/Footer.tsx` — nieużywany komponent

@@ -139,27 +139,65 @@ const navItems: NavItem[] = [
   },
 ];
 
-export default function Sidebar() {
+interface SidebarProps {
+  collapsed: boolean;
+  onToggle: () => void;
+}
+
+function Tooltip({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="relative group/tooltip">
+      {children}
+      <div className="pointer-events-none absolute left-full top-1/2 -translate-y-1/2 ml-2 z-50 hidden group-hover/tooltip:block">
+        <div className="bg-gray-800 text-white text-theme-xs px-2 py-1 rounded whitespace-nowrap border border-gray-700 shadow-lg">
+          {label}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const { data: session } = useSession();
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { unreadCount } = useNotifications();
 
+  const activeItems = navItems.filter((i) => !i.comingSoon);
+  const comingSoonItems = navItems.filter((i) => i.comingSoon);
+
   if (!session) {
     return (
       <>
-        <aside className="w-96 bg-gray-900 border-r border-gray-800 h-full flex flex-col">
-          <div className="p-6 border-b border-gray-800 flex items-center gap-3">
-            <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
-            <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
+        <aside
+          className={`${collapsed ? "w-16" : "w-72"} bg-gray-900 border-r border-gray-800 h-full flex flex-col transition-all duration-200`}
+        >
+          <div className="border-b border-gray-800 flex items-center px-4 py-3 gap-3">
+            {!collapsed && (
+              <>
+                <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
+                <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
+              </>
+            )}
+            <button
+              onClick={onToggle}
+              className="ml-auto p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors shrink-0"
+              title={collapsed ? "Rozwin sidebar" : "Zwij sidebar"}
+            >
+              <svg className={`w-4 h-4 transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
           </div>
           <div className="flex-1 flex items-center justify-center p-6">
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
-            >
-              Zaloguj sie
-            </button>
+            {!collapsed && (
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-brand-500 hover:bg-brand-600 text-white px-6 py-3 rounded-lg font-medium transition-colors"
+              >
+                Zaloguj sie
+              </button>
+            )}
           </div>
         </aside>
         <LoginModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
@@ -168,74 +206,130 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="w-96 bg-gray-900 border-r border-gray-800 h-full flex flex-col">
-      <div className="p-6 border-b border-gray-800 flex items-center gap-3">
-        <Link href="/">
-          <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
-        </Link>
-        <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
+    <aside
+      className={`${collapsed ? "w-16" : "w-72"} bg-gray-900 border-r border-gray-800 h-full flex flex-col transition-all duration-200`}
+    >
+      {/* Logo + toggle */}
+      <div className="border-b border-gray-800 flex items-center px-4 py-3 gap-3">
+        {!collapsed && (
+          <>
+            <Link href="/">
+              <Image src={require("@/assets/logo.png")} alt="wayoo kierowca" width={140} height={36} className="h-9 w-auto" />
+            </Link>
+            <span className="text-theme-xs font-medium text-gray-500 uppercase tracking-widest">driver</span>
+          </>
+        )}
+        <button
+          onClick={onToggle}
+          className="ml-auto p-1.5 rounded-lg text-gray-500 hover:text-white hover:bg-white/[0.05] transition-colors shrink-0"
+          title={collapsed ? "Rozwin sidebar" : "Zwij sidebar"}
+        >
+          <svg className={`w-4 h-4 transition-transform duration-200 ${collapsed ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+          </svg>
+        </button>
       </div>
 
-      <nav className="flex-1 p-4 flex flex-col">
+      {/* Nawigacja */}
+      <nav className="flex-1 p-2 flex flex-col overflow-y-auto">
         <ul className="flex flex-col gap-1">
-          {navItems.filter((i) => !i.comingSoon).map((item) => {
+          {activeItems.map((item) => {
             const isActive = router.pathname === item.href;
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  className={`flex items-center gap-3.5 px-4 py-3.5 rounded-lg text-[1.05rem] leading-snug font-medium transition-colors ${
-                    isActive
-                      ? "bg-brand-500/10 text-brand-400"
-                      : "text-gray-300 hover:bg-white/[0.03] hover:text-white"
-                  }`}
-                >
-                  <span className={isActive ? "text-brand-400" : "text-gray-500"}>
-                    {item.icon}
+            const linkContent = (
+              <Link
+                href={item.href}
+                className={`flex items-center rounded-lg font-medium transition-colors ${
+                  collapsed
+                    ? "justify-center p-3"
+                    : "gap-3.5 px-4 py-3.5 text-[1.05rem] leading-snug"
+                } ${
+                  isActive
+                    ? "bg-brand-500/10 text-brand-400"
+                    : "text-gray-300 hover:bg-white/[0.03] hover:text-white"
+                }`}
+              >
+                <span className={isActive ? "text-brand-400" : "text-gray-500"}>
+                  {item.icon}
+                </span>
+                {!collapsed && item.label}
+                {!collapsed && item.badge && unreadCount > 0 && (
+                  <span className="ml-auto bg-brand-500 text-white text-theme-xs px-2 py-0.5 rounded-full">
+                    {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
-                  {item.label}
-                  {item.badge && unreadCount > 0 && (
-                    <span className="ml-auto bg-brand-500 text-white text-theme-xs px-2 py-0.5 rounded-full">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </Link>
+                )}
+                {collapsed && item.badge && unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-2 h-2 bg-brand-500 rounded-full" />
+                )}
+              </Link>
+            );
+
+            return (
+              <li key={item.href} className={collapsed ? "relative" : ""}>
+                {collapsed ? (
+                  <Tooltip label={item.label}>
+                    <div className="relative">{linkContent}</div>
+                  </Tooltip>
+                ) : (
+                  linkContent
+                )}
               </li>
             );
           })}
         </ul>
 
+        {/* Wkrotce */}
         <ul className="flex flex-col gap-1 mt-auto pt-4 border-t border-gray-800">
-          {navItems.filter((i) => i.comingSoon).map((item) => (
+          {comingSoonItems.map((item) => (
             <li key={item.label}>
-              <div className="flex items-center gap-3 px-4 py-2 rounded-lg text-theme-sm cursor-not-allowed">
-                <span className="text-gray-600">{item.icon}</span>
-                <span className="text-gray-500">{item.label}</span>
-                <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
-                  wkrotce
-                </span>
-              </div>
+              {collapsed ? (
+                <Tooltip label={`${item.label} — wkrótce`}>
+                  <div className="flex justify-center p-3 rounded-lg cursor-not-allowed">
+                    <span className="text-gray-600">{item.icon}</span>
+                  </div>
+                </Tooltip>
+              ) : (
+                <div className="flex items-center gap-3 px-4 py-2 rounded-lg text-theme-sm cursor-not-allowed">
+                  <span className="text-gray-600">{item.icon}</span>
+                  <span className="text-gray-500">{item.label}</span>
+                  <span className="ml-auto text-[10px] bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded">
+                    wkrótce
+                  </span>
+                </div>
+              )}
             </li>
           ))}
         </ul>
       </nav>
 
-      <div className="p-4 border-t border-gray-800">
-        <div className="flex items-center gap-3 px-4 py-2">
-          <div className="w-8 h-8 bg-brand-500/10 rounded-full flex items-center justify-center">
-            <span className="text-brand-400 text-theme-sm font-medium">
-              {session.user?.name?.charAt(0).toUpperCase() || "K"}
-            </span>
+      {/* Profil + przycisk zwijania */}
+      <div className="border-t border-gray-800">
+        {collapsed ? (
+          <div className="p-2 flex justify-center">
+            <Tooltip label={`${session.user?.name || "Kierowca"} — ${session.user?.email}`}>
+              <div className="w-8 h-8 bg-brand-500/10 rounded-full flex items-center justify-center">
+                <span className="text-brand-400 text-theme-sm font-medium">
+                  {session.user?.name?.charAt(0).toUpperCase() || "K"}
+                </span>
+              </div>
+            </Tooltip>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-theme-sm font-medium text-white/90 truncate">
-              {session.user?.name || "Kierowca"}
-            </p>
-            <p className="text-theme-xs text-gray-400 truncate">
-              {session.user?.email}
-            </p>
+        ) : (
+          <div className="p-4 flex items-center gap-3">
+            <div className="w-8 h-8 bg-brand-500/10 rounded-full flex items-center justify-center shrink-0">
+              <span className="text-brand-400 text-theme-sm font-medium">
+                {session.user?.name?.charAt(0).toUpperCase() || "K"}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-theme-sm font-medium text-white/90 truncate">
+                {session.user?.name || "Kierowca"}
+              </p>
+              <p className="text-theme-xs text-gray-400 truncate">
+                {session.user?.email}
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

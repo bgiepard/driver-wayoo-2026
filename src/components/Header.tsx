@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import LoginModal from "./LoginModal";
 import { useNotifications } from "@/context/NotificationsContext";
+import { formatNotificationTime } from "@/utils/formatTime";
 
 export default function Header() {
   const { data: session } = useSession();
@@ -20,19 +21,6 @@ export default function Header() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const formatTime = (date: Date) => {
-    const now = new Date();
-    const diff = now.getTime() - date.getTime();
-    const minutes = Math.floor(diff / 60000);
-    const hours = Math.floor(diff / 3600000);
-    const days = Math.floor(diff / 86400000);
-
-    if (minutes < 1) return "Teraz";
-    if (minutes < 60) return `${minutes} min temu`;
-    if (hours < 24) return `${hours} godz temu`;
-    return `${days} dni temu`;
-  };
 
   return (
     <header className="bg-white border-b border-gray-200">
@@ -129,7 +117,7 @@ export default function Header() {
                                 </p>
                               </div>
                               <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">
-                                {formatTime(notification.createdAt)}
+                                {formatNotificationTime(notification.createdAt)}
                               </span>
                             </div>
                           </div>
