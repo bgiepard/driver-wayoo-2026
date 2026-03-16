@@ -2,12 +2,9 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
 import type { RequestData, Vehicle, Route } from "@/models";
-import { optionLabels, getRouteDisplay, vehicleTypeLabels, parseRoute } from "@/models";
+import { getRouteDisplay, vehicleTypeLabels, parseRoute } from "@/models";
 import AllRoutesMap from "@/components/AllRoutesMap";
 import LocationFilter, { calculateDistance } from "@/components/LocationFilter";
-import { PageTitle, PageSubtitle } from "@/components/ui/Typography";
-import { Card } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/Badge";
 import { formatTimeAgo } from "@/utils/formatTime";
 
 export default function ZleceniaView() {
@@ -57,7 +54,7 @@ export default function ZleceniaView() {
 
   const handleSubmitOffer = async (requestId: string) => {
     if (isSubmittingRef.current) return;
-    if (!price) { setError("Podaj cene"); return; }
+    if (!price) { setError("Podaj cenę"); return; }
 
     isSubmittingRef.current = true;
     setSubmitting(true);
@@ -76,7 +73,7 @@ export default function ZleceniaView() {
       });
 
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Blad podczas skladania oferty"); return; }
+      if (!res.ok) { setError(data.error || "Błąd podczas składania oferty"); return; }
 
       setSelectedRequest(null);
       setPrice("");
@@ -84,22 +81,10 @@ export default function ZleceniaView() {
       setSelectedVehicle("");
       fetchRequests();
     } catch {
-      setError("Blad podczas skladania oferty");
+      setError("Błąd podczas składania oferty");
     } finally {
       isSubmittingRef.current = false;
       setSubmitting(false);
-    }
-  };
-
-  const parseOptions = (optionsStr: string) => {
-    try {
-      const opts = JSON.parse(optionsStr);
-      const active = Object.entries(opts)
-        .filter(([, v]) => v)
-        .map(([k]) => optionLabels[k as keyof typeof optionLabels] || k);
-      return active.length > 0 ? active.join(", ") : "Brak";
-    } catch {
-      return "Brak";
     }
   };
 
@@ -145,37 +130,53 @@ export default function ZleceniaView() {
 
   if (!session) {
     return (
-      <Card className="p-12 text-center">
-        <h1 className="text-title-lg font-bold text-white/90 mb-4">Zlecenia</h1>
-        <p className="text-gray-400">Zaloguj sie, aby zobaczyc dostepne zlecenia.</p>
-      </Card>
+      <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-12 text-center">
+        <p className="text-sm text-gray-500">Zaloguj się, aby zobaczyć dostępne zlecenia.</p>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="mb-6">
-        <div className="flex items-center gap-3">
-          <PageTitle>Dostepne zlecenia</PageTitle>
-          <Badge color="brand" size="md">{filteredRequests.length}</Badge>
+    <div className="space-y-5">
+
+      {/* Nagłówek */}
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Marketplace</p>
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
+            Dostępne zlecenia
+            {filteredRequests.length > 0 && (
+              <span className="ml-2.5 text-sm font-medium text-brand-600 bg-brand-50 border border-brand-100 px-2 py-0.5 rounded-md align-middle">
+                {filteredRequests.length}
+              </span>
+            )}
+          </h1>
         </div>
-        <PageSubtitle>Ponizej znajdziesz zlecenia na ktore mozesz zlozyc oferte.</PageSubtitle>
       </div>
 
       <LocationFilter onFilterChange={handleLocationFilterChange} />
 
       {filteredRequests.length === 0 ? (
-        <Card className="p-12 text-center">
-          <p className="text-gray-400">
-            {requests.length === 0
-              ? "Brak dostepnych zlecen. Zlozyles juz oferty na wszystkie aktywne zlecenia lub nie ma nowych."
-              : "Brak zlecen w wybranym obszarze. Zwieksz promien lub wyczysc filtr, aby zobaczyc wszystkie zlecenia."}
+        <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-16 text-center">
+          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 mx-auto mb-4">
+            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+            </svg>
+          </div>
+          <p className="text-sm font-medium text-gray-700 mb-1">
+            {requests.length === 0 ? "Brak dostępnych zleceń" : "Brak zleceń w wybranym obszarze"}
           </p>
-        </Card>
+          <p className="text-xs text-gray-400">
+            {requests.length === 0
+              ? "Złożyłeś już oferty na wszystkie aktywne zlecenia lub nie ma nowych."
+              : "Zwiększ promień lub wyczyść filtr, aby zobaczyć wszystkie zlecenia."}
+          </p>
+        </div>
       ) : (
         <div className="flex gap-5">
-          {/* Lewa kolumna - lista zlecen */}
-          <div className="w-[40%] flex-shrink-0 flex flex-col gap-3 max-h-[calc(100vh-150px)] overflow-y-auto custom-scrollbar pr-1">
+
+          {/* Lewa kolumna — lista zleceń */}
+          <div className="w-[42%] flex-shrink-0 flex flex-col gap-3 max-h-[calc(100vh-220px)] overflow-y-auto custom-scrollbar pr-1">
             {filteredRequests.map((request) => {
               const isSelected = selectedRequest === request.id;
               return (
@@ -193,39 +194,130 @@ export default function ZleceniaView() {
                       setSelectedRequest(request.id);
                     }
                   }}
-                  className={`rounded-xl p-5 cursor-pointer transition-all border ${
+                  className={`rounded-lg border cursor-pointer transition-all ${
                     isSelected
-                      ? "border-brand-500 bg-brand-500/5 shadow-theme-md"
-                      : "border-gray-700/60 bg-gray-800/50 hover:border-gray-600"
+                      ? "border-brand-300 bg-brand-50 shadow-sm"
+                      : "border-gray-200 bg-white shadow-sm hover:border-gray-300 hover:bg-gray-50"
                   }`}
                 >
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <p className="text-base font-semibold text-white">{getRouteDisplay(request.route)}</p>
-                      <p className="text-theme-sm text-gray-400 mt-1.5">{request.date} o {request.time}</p>
-                      <p className="text-theme-sm text-gray-400">{request.adults} doroslych{request.children > 0 && `, ${request.children} dzieci`}</p>
-                      <p className="text-theme-sm text-gray-400">Opcje: {parseOptions(request.options)}</p>
+                  <div className="p-4">
+                    {/* Nagłówek: trasa (lewo) + data/godzina (prawo) */}
+                    <div className="flex items-start justify-between gap-3 mb-3">
+                      <div className="flex-1 min-w-0">
+                        {(() => {
+                          const route = parseRoute(request.route);
+                          const origin = route?.origin.address.split(",")[0] ?? "—";
+                          const dest = route?.destination.address.split(",")[0] ?? "—";
+                          const wpCount = route?.waypoints.length ?? 0;
+                          return (
+                            <>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className="text-sm font-semibold text-gray-900 truncate max-w-[110px]">{origin}</span>
+                                <svg className="w-3 h-3 text-gray-400 shrink-0" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                                </svg>
+                                <span className="text-sm font-semibold text-gray-900 truncate max-w-[110px]">{dest}</span>
+                                {wpCount > 0 && (
+                                  <span className="text-xs font-medium bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded shrink-0">
+                                    +{wpCount} {wpCount === 1 ? "przystanek" : "przystanki"}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-400 mt-0.5 truncate">
+                                {route?.origin.address} → {route?.destination.address}
+                              </p>
+                            </>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Data + godzina + "za X dni" */}
+                      <div className="shrink-0 text-right">
+                        <p className="text-xs font-semibold text-gray-700">{request.date} · {request.time}</p>
+                        <p className="text-xs text-gray-400 mt-0.5">{(() => {
+                          try {
+                            const trip = new Date(request.date);
+                            if (isNaN(trip.getTime())) return "";
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            trip.setHours(0, 0, 0, 0);
+                            const diff = Math.round((trip.getTime() - today.getTime()) / 86400000);
+                            if (diff < 0) return "minęło";
+                            if (diff === 0) return "dzisiaj";
+                            if (diff === 1) return "jutro";
+                            if (diff < 7) return `za ${diff} dni`;
+                            if (diff < 14) return "za tydzień";
+                            return `za ${Math.round(diff / 7)} tyg.`;
+                          } catch { return ""; }
+                        })()}</p>
+                      </div>
                     </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <span className="text-theme-xs text-gray-500">{formatTimeAgo(request.createdAt)}</span>
-                      {isSelected && <Badge color="brand">Wybrane</Badge>}
+
+                    {/* Drugi rząd: pasażerowie */}
+                    <div className="flex items-center gap-2 flex-wrap mb-2.5">
+                      <span className="inline-flex items-center gap-1 text-xs font-medium bg-gray-100 text-gray-600 px-2 py-1 rounded-md">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+                        </svg>
+                        {request.adults + (request.children ?? 0)} os.
+                        {request.children > 0 && <span className="text-gray-400 ml-0.5">({request.adults}+{request.children})</span>}
+                      </span>
                     </div>
+
+                    {/* Trzeci rząd: opcje */}
+                    {(() => {
+                      try {
+                        const opts = JSON.parse(request.options);
+                        const active = Object.entries(opts).filter(([, v]) => v).map(([k]) => k);
+                        if (active.length === 0) return null;
+                        const icons: Record<string, React.ReactNode> = {
+                          wifi: <><path strokeLinecap="round" strokeLinejoin="round" d="M8.288 15.038a5.25 5.25 0 017.424 0M5.106 11.856c3.807-3.808 9.98-3.808 13.788 0M1.924 8.674c5.565-5.565 14.587-5.565 20.152 0M12.53 18.22l-.53.53-.53-.53a.75.75 0 011.06 0z" /></>,
+                          wc: <><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" /></>,
+                          tv: <><path strokeLinecap="round" strokeLinejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" /></>,
+                          airConditioning: <><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></>,
+                          powerOutlet: <><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></>,
+                        };
+                        const labels: Record<string, string> = { wifi: "WiFi", wc: "WC", tv: "TV", airConditioning: "Klima", powerOutlet: "Gniazdko" };
+                        return (
+                          <div className="flex flex-wrap gap-1.5">
+                            {active.map((k) => (
+                              <span key={k} className="inline-flex items-center gap-1 text-xs font-medium bg-brand-50 text-brand-700 border border-brand-100 px-2 py-0.5 rounded-md">
+                                <svg className="w-3 h-3" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                  {icons[k]}
+                                </svg>
+                                {labels[k] ?? k}
+                              </span>
+                            ))}
+                          </div>
+                        );
+                      } catch { return null; }
+                    })()}
+
+                    {/* Czas dodania — prawy dolny róg */}
+                    <p className="text-xs text-gray-400 text-right mt-2">{formatTimeAgo(request.createdAt)}</p>
                   </div>
 
+                  {/* Formularz oferty */}
                   {isSelected && (
-                    <div className="mt-4 p-4 bg-gray-900/60 rounded-lg border border-gray-700/50" onClick={(e) => e.stopPropagation()}>
-                      <h3 className="font-semibold text-white mb-3">Zloz oferte</h3>
-                      {error && <p className="text-error-400 text-theme-sm mb-3">{error}</p>}
+                    <div
+                      className="mx-4 mb-4 p-4 bg-white rounded-lg border border-gray-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <h3 className="text-sm font-semibold text-gray-900 mb-3">Złóż ofertę</h3>
+                      {error && <p className="text-xs text-red-600 mb-3 bg-red-50 border border-red-100 rounded-md px-3 py-2">{error}</p>}
+
                       <div className="flex flex-col gap-3">
+
+                        {/* Wybór pojazdu */}
                         <div>
-                          <label className="block text-theme-xs text-gray-400 mb-1.5">Wybierz pojazd</label>
+                          <label className="block text-xs font-medium text-gray-500 mb-1.5">Wybierz pojazd</label>
                           {vehicles.length > 0 ? (
                             <select
                               value={selectedVehicle}
                               onChange={(e) => setSelectedVehicle(e.target.value)}
-                              className="w-full border border-gray-700 rounded-lg p-3 text-theme-sm bg-gray-800 text-white focus:border-brand-500"
+                              className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-100"
                             >
-                              <option value="">-- Bez przypisanego pojazdu --</option>
+                              <option value="">— Bez przypisanego pojazdu —</option>
                               {vehicles.map((vehicle) => (
                                 <option key={vehicle.id} value={vehicle.id}>
                                   {vehicle.name} ({vehicleTypeLabels[vehicle.type]}, {vehicle.seats} miejsc)
@@ -233,50 +325,71 @@ export default function ZleceniaView() {
                               ))}
                             </select>
                           ) : (
-                            <div className="p-3 bg-warning-500/10 border border-warning-500/20 rounded-lg">
-                              <p className="text-theme-sm text-warning-400">
-                                Nie masz zadnych pojazdow w flocie.{" "}
-                                <Link href="/my-fleet" className="underline font-medium text-warning-300">Dodaj pojazd</Link>
-                                , aby moc go dolaczac do ofert.
+                            <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                              <p className="text-xs text-amber-700">
+                                Nie masz żadnych pojazdów w flocie.{" "}
+                                <Link href="/my-fleet" className="underline font-medium">Dodaj pojazd</Link>
+                                , aby móc go dołączać do ofert.
                               </p>
                             </div>
                           )}
                         </div>
 
+                        {/* Podgląd pojazdu */}
                         {selectedVehicle && (() => {
                           const vehicle = vehicles.find(v => v.id === selectedVehicle);
                           if (!vehicle) return null;
                           return (
-                            <div className="p-3 bg-brand-500/10 border border-brand-500/20 rounded-lg">
-                              <div className="flex gap-3">
-                                {vehicle.photos && vehicle.photos.length > 0 ? (
-                                  <img src={vehicle.photos[0]} alt={vehicle.name} className="w-16 h-16 rounded-lg object-cover" />
-                                ) : (
-                                  <div className="w-16 h-16 rounded-lg bg-brand-500/15 flex items-center justify-center">
-                                    <svg className="w-6 h-6 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
-                                    </svg>
-                                  </div>
-                                )}
-                                <div className="flex-1">
-                                  <p className="font-medium text-white">{vehicle.name}</p>
-                                  <p className="text-theme-sm text-gray-400">{vehicle.brand} {vehicle.model} | {vehicle.seats} miejsc</p>
-                                  <div className="flex flex-wrap gap-1 mt-1">
-                                    {vehicle.hasWifi && <span className="text-theme-xs bg-brand-500/15 text-brand-400 px-1.5 py-0.5 rounded">WiFi</span>}
-                                    {vehicle.hasWC && <span className="text-theme-xs bg-brand-500/15 text-brand-400 px-1.5 py-0.5 rounded">WC</span>}
-                                    {vehicle.hasTV && <span className="text-theme-xs bg-brand-500/15 text-brand-400 px-1.5 py-0.5 rounded">TV</span>}
-                                    {vehicle.hasAirConditioning && <span className="text-theme-xs bg-brand-500/15 text-brand-400 px-1.5 py-0.5 rounded">Klima</span>}
-                                  </div>
+                            <div className="p-3 bg-brand-50 border border-brand-100 rounded-lg flex gap-3">
+                              {vehicle.photos && vehicle.photos.length > 0 ? (
+                                <img src={vehicle.photos[0]} alt={vehicle.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                              ) : (
+                                <div className="w-14 h-14 rounded-lg bg-brand-100 flex items-center justify-center shrink-0">
+                                  <svg className="w-5 h-5 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+                                  </svg>
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900">{vehicle.name}</p>
+                                <p className="text-xs text-gray-500 mt-0.5">{vehicle.brand} {vehicle.model} · {vehicle.seats} miejsc</p>
+                                <div className="flex flex-wrap gap-1 mt-1.5">
+                                  {vehicle.hasWifi && <span className="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">WiFi</span>}
+                                  {vehicle.hasWC && <span className="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">WC</span>}
+                                  {vehicle.hasTV && <span className="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">TV</span>}
+                                  {vehicle.hasAirConditioning && <span className="text-xs bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded">Klima</span>}
                                 </div>
                               </div>
                             </div>
                           );
                         })()}
 
-                        <input type="number" placeholder="Cena (PLN)" value={price} onChange={(e) => setPrice(e.target.value)} className="border border-gray-700 rounded-lg p-3 text-theme-sm bg-gray-800 text-white placeholder-gray-500 focus:border-brand-500" min="0" step="0.01" />
-                        <textarea placeholder="Wiadomosc (opcjonalnie)" value={message} onChange={(e) => setMessage(e.target.value)} className="border border-gray-700 rounded-lg p-3 text-theme-sm bg-gray-800 text-white placeholder-gray-500 focus:border-brand-500 resize-none" rows={3} />
-                        <button onClick={() => handleSubmitOffer(request.id)} disabled={submitting} className="bg-brand-500 hover:bg-brand-600 text-white px-5 py-3 rounded-lg text-theme-sm font-medium disabled:opacity-50 transition-colors">
-                          {submitting ? "Wysylanie..." : "Wyslij oferte"}
+                        {/* Cena */}
+                        <input
+                          type="number"
+                          placeholder="Cena (PLN)"
+                          value={price}
+                          onChange={(e) => setPrice(e.target.value)}
+                          className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-100"
+                          min="0"
+                          step="0.01"
+                        />
+
+                        {/* Wiadomość */}
+                        <textarea
+                          placeholder="Wiadomość (opcjonalnie)"
+                          value={message}
+                          onChange={(e) => setMessage(e.target.value)}
+                          className="border border-gray-200 rounded-lg px-3 py-2.5 text-sm bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:border-brand-400 focus:ring-1 focus:ring-brand-100 resize-none"
+                          rows={3}
+                        />
+
+                        <button
+                          onClick={() => handleSubmitOffer(request.id)}
+                          disabled={submitting}
+                          className="bg-brand-500 hover:bg-brand-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium disabled:opacity-50 transition-colors"
+                        >
+                          {submitting ? "Wysyłanie..." : "Wyślij ofertę"}
                         </button>
                       </div>
                     </div>
@@ -286,12 +399,12 @@ export default function ZleceniaView() {
             })}
           </div>
 
-          {/* Prawa kolumna - mapa */}
-          <div className="w-[60%]">
-            <div className="rounded-xl border border-gray-700/60 bg-gray-800/50 p-4 sticky top-4 overflow-hidden">
+          {/* Prawa kolumna — mapa */}
+          <div className="flex-1">
+            <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden sticky top-4">
               <AllRoutesMap
                 routes={routesForMap}
-                height="calc(100vh - 200px)"
+                height="calc(100vh - 220px)"
                 selectedRouteId={selectedRequest}
                 onRouteClick={handleRouteClick}
               />
@@ -299,6 +412,6 @@ export default function ZleceniaView() {
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

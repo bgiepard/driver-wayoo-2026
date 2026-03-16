@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import type { Route } from "@/models";
-import { DARK_MAP_STYLES } from "@/lib/mapStyles";
+import { LIGHT_MAP_STYLES } from "@/lib/mapStyles";
 
 interface RouteWithId {
   id: string;
@@ -43,7 +43,7 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
         mapTypeControl: false,
         streetViewControl: false,
         fullscreenControl: false,
-        styles: DARK_MAP_STYLES,
+        styles: LIGHT_MAP_STYLES,
       });
 
       setMapReady(true);
@@ -274,10 +274,10 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
   if (routes.length === 0) {
     return (
       <div
-        className="w-full rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center"
+        className="w-full rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center"
         style={{ height }}
       >
-        <span className="text-gray-600 text-sm">Brak tras do wyswietlenia</span>
+        <span className="text-gray-400 text-sm">Brak tras do wyświetlenia</span>
       </div>
     );
   }
@@ -285,10 +285,10 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
   return (
     <div className="relative">
       {loadingRoute && (
-        <div className="absolute top-2 right-2 bg-gray-900/80 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-white/[0.08] z-10">
+        <div className="absolute top-2 right-2 bg-white/90 backdrop-blur-sm px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm z-10">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs text-gray-400">Ladowanie trasy...</span>
+            <span className="text-xs text-gray-500">Ładowanie trasy...</span>
           </div>
         </div>
       )}
@@ -300,10 +300,10 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
       />
 
       {routes.length > 0 && (
-        <div className="absolute bottom-2 left-2 bg-gray-900/80 backdrop-blur-sm px-3 py-2 rounded-lg border border-white/[0.08]">
-          <p className="text-xs text-gray-400">
-            {routes.length} {routes.length === 1 ? "zlecenie" : routes.length < 5 ? "zlecenia" : "zlecen"}
-            {selectedRouteId && " · kliknij gdzie indziej aby schowac trase"}
+        <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+          <p className="text-xs text-gray-500">
+            {routes.length} {routes.length === 1 ? "zlecenie" : routes.length < 5 ? "zlecenia" : "zleceń"}
+            {selectedRouteId && " · kliknij gdzie indziej aby schować trasę"}
           </p>
         </div>
       )}

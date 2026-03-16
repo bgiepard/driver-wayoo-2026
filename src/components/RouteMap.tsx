@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Route } from "@/models";
-import { DARK_MAP_STYLES } from "@/lib/mapStyles";
+import { LIGHT_MAP_STYLES } from "@/lib/mapStyles";
 
 interface RouteMapProps {
   route: Route;
@@ -32,7 +32,7 @@ export default function RouteMap({ route, height = "200px" }: RouteMapProps) {
           streetViewControl: false,
           fullscreenControl: false,
           zoomControl: false,
-          styles: DARK_MAP_STYLES,
+          styles: LIGHT_MAP_STYLES,
         });
 
         directionsRendererRef.current = new window.google.maps.DirectionsRenderer({
@@ -122,10 +122,10 @@ export default function RouteMap({ route, height = "200px" }: RouteMapProps) {
   if (!route.origin.lat || !route.destination.lat) {
     return (
       <div
-        className="w-full rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center"
+        className="w-full rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center"
         style={{ height }}
       >
-        <span className="text-gray-600 text-sm">Brak danych trasy</span>
+        <span className="text-gray-400 text-sm">Brak danych trasy</span>
       </div>
     );
   }
@@ -135,11 +135,11 @@ export default function RouteMap({ route, height = "200px" }: RouteMapProps) {
       {/* Loader */}
       {isLoading && (
         <div
-          className="absolute inset-0 bg-gray-900 rounded-xl flex items-center justify-center z-10"
+          className="absolute inset-0 bg-gray-50 rounded-lg flex items-center justify-center z-10"
         >
           <div className="flex flex-col items-center gap-2">
             <div className="w-6 h-6 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
-            <span className="text-gray-500 text-xs">Ladowanie mapy...</span>
+            <span className="text-gray-400 text-xs">Ładowanie mapy...</span>
           </div>
         </div>
       )}
@@ -162,8 +162,8 @@ export default function RouteMap({ route, height = "200px" }: RouteMapProps) {
 
       {/* Distance badge */}
       {distance && !isLoading && (
-        <div className="absolute bottom-2 left-2 bg-gray-900/80 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-white/[0.08]">
-          <span className="text-xs font-medium text-gray-300">{distance}</span>
+        <div className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-sm px-2.5 py-1.5 rounded-lg border border-gray-200 shadow-sm">
+          <span className="text-xs font-medium text-gray-600">{distance}</span>
         </div>
       )}
     </div>

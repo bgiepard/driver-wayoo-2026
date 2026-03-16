@@ -1,27 +1,8 @@
 import { useState, useEffect, useRef } from "react";
+import { LIGHT_MAP_STYLES } from "@/lib/mapStyles";
 
 const STORAGE_KEY = "driver-location-filter";
 const RADIUS_OPTIONS = [25, 50, 100, 150, 200, 300];
-
-// Jasny styl mapy
-const MAP_STYLES: google.maps.MapTypeStyle[] = [
-  { featureType: "all", elementType: "geometry", stylers: [{ color: "#f8f9fa" }] },
-  { featureType: "all", elementType: "labels.text.fill", stylers: [{ color: "#6c757d" }] },
-  { featureType: "all", elementType: "labels.text.stroke", stylers: [{ color: "#ffffff" }] },
-  { featureType: "administrative.country", elementType: "geometry.stroke", stylers: [{ color: "#6c757d" }, { weight: 2 }] },
-  { featureType: "administrative.province", elementType: "geometry.stroke", stylers: [{ color: "#adb5bd" }, { weight: 1.5 }] },
-  { featureType: "administrative.locality", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
-  { featureType: "administrative.land_parcel", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "poi", stylers: [{ visibility: "off" }] },
-  { featureType: "road", elementType: "geometry", stylers: [{ color: "#ffffff" }] },
-  { featureType: "road", elementType: "geometry.stroke", stylers: [{ color: "#e9ecef" }] },
-  { featureType: "road.highway", elementType: "geometry", stylers: [{ color: "#e9ecef" }] },
-  { featureType: "road.highway", elementType: "geometry.stroke", stylers: [{ color: "#dee2e6" }] },
-  { featureType: "transit", stylers: [{ visibility: "off" }] },
-  { featureType: "water", elementType: "geometry", stylers: [{ color: "#cfe2f3" }] },
-  { featureType: "water", elementType: "labels", stylers: [{ visibility: "off" }] },
-  { featureType: "landscape.natural", elementType: "geometry", stylers: [{ color: "#f1f3f4" }] },
-];
 
 interface LocationFilterProps {
   onFilterChange: (filter: { lat: number; lng: number; radius: number } | null) => void;
@@ -89,7 +70,7 @@ export default function LocationFilter({ onFilterChange }: LocationFilterProps) 
         zoom: savedFilter ? 8 : 6,
         disableDefaultUI: true,
         zoomControl: true,
-        styles: MAP_STYLES,
+        styles: LIGHT_MAP_STYLES,
       });
 
       mapInstanceRef.current = map;
@@ -242,7 +223,7 @@ export default function LocationFilter({ onFilterChange }: LocationFilterProps) 
         </svg>
         <span>Filtruj wedlug lokalizacji</span>
         {savedFilter && (
-          <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-full text-xs">
+          <span className="bg-brand-50 text-brand-700 border border-brand-100 px-2 py-0.5 rounded-md text-xs font-medium">
             {savedFilter.radius} km
           </span>
         )}
@@ -270,7 +251,7 @@ export default function LocationFilter({ onFilterChange }: LocationFilterProps) 
             <div className="relative">
               {!mapReady && (
                 <div className="absolute inset-0 bg-gray-100 rounded-lg flex items-center justify-center z-10">
-                  <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full animate-spin" />
                 </div>
               )}
               <div
@@ -289,7 +270,7 @@ export default function LocationFilter({ onFilterChange }: LocationFilterProps) 
                     onClick={() => handleRadiusChange(r)}
                     className={`px-3 py-1.5 text-sm rounded-lg transition-colors ${
                       radius === r
-                        ? "bg-green-600 text-white"
+                        ? "bg-brand-500 text-white"
                         : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                     }`}
                   >
@@ -301,12 +282,12 @@ export default function LocationFilter({ onFilterChange }: LocationFilterProps) 
 
             {/* Selected address */}
             {tempFilter && address && (
-              <div className="mt-4 p-3 bg-green-50 rounded-lg">
-                <p className="text-sm text-green-800">
+              <div className="mt-4 p-3 bg-brand-50 border border-brand-100 rounded-lg">
+                <p className="text-sm text-brand-900">
                   <span className="font-medium">Punkt:</span> {address}
                 </p>
-                <p className="text-xs text-green-600 mt-1">
-                  Pokaze zlecenia w promieniu {tempFilter.radius} km
+                <p className="text-xs text-brand-600 mt-1">
+                  Pokaże zlecenia w promieniu {tempFilter.radius} km
                 </p>
               </div>
             )}
@@ -338,7 +319,7 @@ export default function LocationFilter({ onFilterChange }: LocationFilterProps) 
                 </button>
                 <button
                   onClick={handleSave}
-                  className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
+                  className="bg-brand-500 hover:bg-brand-600 text-white px-5 py-2 rounded-lg text-sm font-medium transition-colors"
                 >
                   Zapisz
                 </button>
