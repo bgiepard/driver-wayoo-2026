@@ -108,7 +108,8 @@ export default async function handler(
       return res.status(201).json({ id: record.id, message: "Pojazd dodany" });
     } catch (error) {
       console.error("Error creating vehicle:", error);
-      return res.status(500).json({ error: "Blad dodawania pojazdu" });
+      const message = error instanceof Error ? error.message : String(error);
+      return res.status(500).json({ error: "Blad dodawania pojazdu", details: message });
     }
   }
 
@@ -159,7 +160,8 @@ export default async function handler(
       return res.status(200).json({ message: "Pojazd zaktualizowany" });
     } catch (error) {
       console.error("Error updating vehicle:", error);
-      return res.status(500).json({ error: "Blad aktualizacji pojazdu" });
+      const message = error instanceof Error ? error.message : String(error);
+      return res.status(500).json({ error: "Blad aktualizacji pojazdu", details: message });
     }
   }
 

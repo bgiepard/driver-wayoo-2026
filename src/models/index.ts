@@ -37,6 +37,7 @@ export interface Route {
   origin: Place;
   destination: Place;
   waypoints: Place[];
+  distanceKm?: number;
 }
 
 // --------------------------------------------
