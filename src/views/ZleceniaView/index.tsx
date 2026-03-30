@@ -5,7 +5,7 @@ import type { RequestData, Vehicle, Route } from "@/models";
 import { vehicleTypeLabels, parseRoute } from "@/models";
 import AllRoutesMap from "@/components/AllRoutesMap";
 import LocationFilter, { calculateDistance } from "@/components/LocationFilter";
-import { formatTimeAgo } from "@/utils/formatTime";
+import { formatTimeAgo, formatOfferExpiry } from "@/utils/formatTime";
 
 export default function ZleceniaView() {
   const { data: session, status } = useSession();
@@ -392,18 +392,11 @@ export default function ZleceniaView() {
                       })()}
                       <span className="ml-auto flex items-center gap-2 shrink-0">
                         {request.offerExpiresAt && (() => {
-                          const expiresAt = new Date(request.offerExpiresAt!);
-                          const now = new Date();
-                          const msLeft = expiresAt.getTime() - now.getTime();
-                          const daysLeft = Math.ceil(msLeft / (24 * 60 * 60 * 1000));
-                          const dateLabel = expiresAt.toLocaleDateString("pl-PL", { day: "numeric", month: "short" });
-                          if (daysLeft <= 0) {
-                            return <span className="text-xs font-medium bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded-md">Wygasło {dateLabel}</span>;
-                          }
-                          if (daysLeft <= 1) {
-                            return <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-md">Ważne do {dateLabel}</span>;
-                          }
-                          return <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md">Ważne do {dateLabel}</span>;
+                          const { label, expired, urgent } = formatOfferExpiry(request.offerExpiresAt);
+                          if (!label) return null;
+                          if (expired) return <span className="text-xs font-medium bg-red-50 text-red-600 border border-red-100 px-2 py-0.5 rounded-md">{label}</span>;
+                          if (urgent) return <span className="text-xs font-medium bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded-md">{label}</span>;
+                          return <span className="text-xs font-medium bg-gray-100 text-gray-500 px-2 py-0.5 rounded-md">{label}</span>;
                         })()}
                         <span className="text-xs text-gray-400">dodano: {formatTimeAgo(request.createdAt)}</span>
                       </span>

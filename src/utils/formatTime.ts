@@ -1,3 +1,19 @@
+import { formatDistanceToNow, isPast } from "date-fns";
+import { pl } from "date-fns/locale";
+
+// Zwraca tekst o ważności oferty: "wygasło", "wygasa za 2 godziny", "ważna jeszcze 3 dni" itp.
+export function formatOfferExpiry(expiresAt: string | null): { label: string; expired: boolean; urgent: boolean } {
+  if (!expiresAt) return { label: "", expired: false, urgent: false };
+  const date = new Date(expiresAt);
+  if (isPast(date)) {
+    return { label: "Wygasło", expired: true, urgent: false };
+  }
+  const msLeft = date.getTime() - Date.now();
+  const hoursLeft = msLeft / 3600000;
+  const label = "Jeszcze " + formatDistanceToNow(date, { locale: pl });
+  return { label, expired: false, urgent: hoursLeft < 24 };
+}
+
 // Formatuje datę ISO jako "X min temu", "wczoraj" itp.
 export function formatTimeAgo(dateStr: string): string {
   const now = new Date();
