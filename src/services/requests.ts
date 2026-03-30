@@ -7,16 +7,17 @@ function mapRecordToRequest(record: AirtableRecord<FieldSet>): RequestData {
 
   return {
     id: record.id,
-    userId: userLinks?.[0] || (record.get("userId") as string),
-    userEmail: record.get("userEmail") as string,
+    userId: userLinks?.[0] || (record.get("userId") as string) || "",
+    userEmail: (record.get("userEmail") as string) || "",
     route: (record.get("route") as string) || "{}",
-    date: record.get("date") as string,
-    time: record.get("time") as string,
-    adults: record.get("adults") as number,
-    children: record.get("children") as number,
-    options: record.get("options") as string,
+    date: (record.get("date") as string) || "",
+    time: (record.get("time") as string) || "",
+    adults: (record.get("adults") as number) ?? 1,
+    children: (record.get("children") as number) ?? 0,
+    options: (record.get("options") as string) || "{}",
     status: (record.get("status") as RequestStatus) || "published",
     createdAt: (record.get("Created") as string) || new Date().toISOString(),
+    offerExpiresAt: (record.get("offerExpiresAt") as string) || null,
   };
 }
 

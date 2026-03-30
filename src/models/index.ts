@@ -48,7 +48,7 @@ export type RequestStatus =
   | 'published'
   | 'paid'
   | 'completed'
-  | 'cancelled';
+  | 'canceled';
 
 export interface RequestData {
   id: string;
@@ -62,6 +62,7 @@ export interface RequestData {
   options: string;
   status: RequestStatus;
   createdAt: string;
+  offerExpiresAt: string | null; // ISO string - data wygaśnięcia zapytania
 }
 
 // Helper do parsowania trasy
