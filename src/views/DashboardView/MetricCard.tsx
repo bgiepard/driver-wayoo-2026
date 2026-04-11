@@ -8,16 +8,20 @@ export function MetricCard({
   icon?: React.ReactNode;
 }) {
   return (
-    <div className="rounded-xl border border-gray-200 bg-white px-5 py-4 shadow-sm">
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">{label}</p>
+    <div className="bg-white border border-[#e2e8f0] rounded-2xl overflow-hidden flex-1">
+      <div className="flex gap-4 items-center p-6 border-b border-[#eef2ff]">
         {icon && (
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 text-gray-500">
-            {icon}
+          <div className="bg-[#e0e7ff] p-2 rounded-lg shrink-0 flex items-center justify-center">
+            <div className="w-5 h-5 flex items-center justify-center text-[#0b298f]">
+              {icon}
+            </div>
           </div>
         )}
+        <div className="flex flex-col gap-1">
+          <p className="text-[#475569] text-[14px] font-medium leading-snug">{label}</p>
+          <p className="text-[#0f172a] text-[18px] font-medium leading-snug">{value}</p>
+        </div>
       </div>
-      <p className="text-2xl font-bold text-gray-900 tracking-tight">{value}</p>
     </div>
   );
 }
