@@ -120,11 +120,7 @@ export default function DashboardView() {
       {/* Rząd 2 — Lista ofert + Kalendarz */}
       <div className="flex flex-col md:flex-row gap-3 md:gap-4 items-stretch">
         <div className="flex-[3] min-w-0">
-          <DashboardBox
-            label="Ostatnio złożone oferty"
-            offers={offers}
-            emptyText="Brak złożonych ofert"
-          />
+          <DashboardBox offers={offers} />
         </div>
         <div className="flex-[2] min-w-0">
           <DashboardCalendar offers={offers} onOfferClick={setSelectedOffer} />

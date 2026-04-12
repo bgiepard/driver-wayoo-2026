@@ -118,11 +118,16 @@ export default function AllRoutesMap({ routes, height = "400px", selectedRouteId
     });
 
     if (!bounds.isEmpty() && routes.length > 1) {
-      mapInstanceRef.current.fitBounds(bounds, 50);
+      mapInstanceRef.current.fitBounds(bounds, 60);
+      // Cap zoom — żeby nie przybliżać za bardzo gdy wszystkie zlecenia są w jednym rejonie
+      window.google.maps.event.addListenerOnce(mapInstanceRef.current, "idle", () => {
+        const z = mapInstanceRef.current?.getZoom() ?? 6;
+        if (z > 6) mapInstanceRef.current?.setZoom(6);
+      });
     } else if (routes.length === 1) {
       const route = routes[0].route;
       mapInstanceRef.current.setCenter({ lat: route.origin.lat, lng: route.origin.lng });
-      mapInstanceRef.current.setZoom(10);
+      mapInstanceRef.current.setZoom(8);
     }
   }, [routes, mapReady, clearMarkers, clearDirections, selectedRouteId]);
 

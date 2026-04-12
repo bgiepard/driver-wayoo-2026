@@ -115,7 +115,7 @@ export default function MyOffersView() {
         <h1 className="text-[#0f172a] text-[18px] font-semibold leading-snug shrink-0">Moje oferty</h1>
 
         {/* Taby po prawej */}
-        <div className="flex items-center gap-1 overflow-x-auto">
+        <div className="flex items-center gap-5 overflow-x-auto">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.key;
             const count = tab.key === activeTab
@@ -126,7 +126,7 @@ export default function MyOffersView() {
               <button
                 key={tab.key}
                 onClick={() => handleTabChange(tab.key)}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[14px] whitespace-nowrap transition-colors ${
+                className={`flex items-center gap-1.5 text-[14px] whitespace-nowrap transition-colors ${
                   isActive
                     ? "font-semibold text-[#0f172a]"
                     : "font-medium text-[#94a3b8] hover:text-[#475569]"
@@ -134,7 +134,7 @@ export default function MyOffersView() {
               >
                 {tab.label}
                 {count && (
-                  <span className={`text-[12px] font-semibold ${isActive ? "text-[#0b298f]" : "text-[#94a3b8]"}`}>
+                  <span className={`text-[14px] font-semibold ${isActive ? "text-[#0f172a]" : "text-[#94a3b8]"}`}>
                     {count}
                   </span>
                 )}

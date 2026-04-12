@@ -1,4 +1,16 @@
-# WAYOO 2026 (Panel kierowcy) - Kontekst projektu dla Claude
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Komendy
+
+```bash
+yarn dev      # dev server na porcie 3001
+yarn build    # produkcyjny build
+yarn lint     # ESLint
+```
+
+Brak testów w projekcie.
 
 ## Czym jest WAYOO
 
@@ -26,6 +38,9 @@ Obie aplikacje współdzielą bazę Airtable i kanały Pusher, ale mają osobne 
 - **Google Maps API** — mapy tras
 - **Cloudinary** — upload zdjęć pojazdów
 - **bcryptjs** — hashowanie haseł
+- **recharts** — wykresy na dashboardzie
+- **date-fns** — formatowanie dat
+- **Statsig** — analytics i session replay (tylko frontend)
 
 ## Architektura
 
@@ -41,7 +56,7 @@ src/
 │   ├── DashboardView/
 │   │   ├── index.tsx          # główny widok dashboardu
 │   │   ├── MetricCard.tsx     # karta metryki (oferty, przychód)
-│   │   ├── DashboardBox.tsx   # box z listą ofert (oczekujące/opłacone)
+│   │   ├── DashboardBox.tsx   # box z ostatnimi ofertami
 │   │   └── DashboardCalendar.tsx  # kalendarz zlecen (3 miesiące)
 │   ├── ZleceniaView/
 │   │   └── index.tsx          # lista zleceń + mapa + formularz oferty
@@ -70,12 +85,7 @@ src/
 │   ├── RouteMap.tsx           # mapa jednej trasy
 │   ├── AllRoutesMap.tsx       # mapa wszystkich tras
 │   ├── LocationFilter.tsx     # filtr lokalizacji z mapą
-│   ├── Footer.tsx             # nieużywany
-│   ├── icons/                 # GoogleIcon
-│   └── ui/
-│       ├── Card.tsx
-│       ├── Badge.tsx
-│       └── Typography.tsx     # PageTitle, PageSubtitle
+│   └── icons/                 # GoogleIcon
 │
 ├── constants/       # Stałe współdzielone — DODAJ TU nowe stałe
 │   └── offerStatus.ts  # STATUS_CONFIG dla statusów oferty (new/paid/canceled/rejected)
@@ -132,7 +142,9 @@ Wyposażenie: WiFi, WC, TV, klimatyzacja, gniazdka, bagażnik
 - `GET /api/offers?driverId=X` — oferty kierowcy
 - `GET/POST /api/vehicles` — zarządzanie flotą
 - `POST /api/upload` — upload zdjęć (Cloudinary)
+- `GET/POST /api/notifications` — powiadomienia kierowcy
 - `POST /api/auth/register` — rejestracja kierowcy
+- `GET/POST /api/auth/[...nextauth]` — NextAuth handler
 
 ## Real-time (Pusher)
 
@@ -170,4 +182,3 @@ CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET
 - `components/OfferDetailsModal.tsx` — ma własną kopię `STATUS_CONFIG` (nie używa `constants/offerStatus.ts`)
 - `components/Header.tsx` — ma własną kopię `formatTime` (nie używa `utils/formatTime.ts`) + stary biały styl niekompatybilny z ciemnym motywem UI
 - `views/TripHistoryView/` — oparta na mock data, brak integracji z backendem
-- `components/Footer.tsx` — nieużywany komponent

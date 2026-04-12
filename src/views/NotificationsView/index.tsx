@@ -4,46 +4,35 @@ import { useRouter } from "next/router";
 import type { Notification } from "@/context/NotificationsContext";
 import { formatNotificationTime } from "@/utils/formatTime";
 
-function pluralNotifications(count: number): string {
-  if (count === 1) return "nieprzeczytane powiadomienie";
-  if (count < 5) return "nieprzeczytane powiadomienia";
-  return "nieprzeczytanych powiadomień";
-}
-
 const TYPE_CONFIG: Record<string, {
   label: string;
   iconBg: string;
   iconColor: string;
   dot: string;
-  badge: string;
 }> = {
   offer_paid: {
     label: "Przejazd opłacony",
-    iconBg: "bg-brand-50",
-    iconColor: "text-brand-600",
-    dot: "bg-brand-500",
-    badge: "bg-brand-50 text-brand-700",
+    iconBg: "bg-[#e6f6ec]",
+    iconColor: "text-[#01a83d]",
+    dot: "bg-[#01a83d]",
   },
   offer_rejected: {
     label: "Oferta odrzucona",
-    iconBg: "bg-red-50",
-    iconColor: "text-red-500",
-    dot: "bg-red-400",
-    badge: "bg-red-50 text-red-600",
+    iconBg: "bg-[#fceaeb]",
+    iconColor: "text-[#de2b3b]",
+    dot: "bg-[#de2b3b]",
   },
   new_request: {
     label: "Nowe zlecenie",
-    iconBg: "bg-sky-50",
-    iconColor: "text-sky-500",
-    dot: "bg-sky-400",
-    badge: "bg-sky-50 text-sky-600",
+    iconBg: "bg-[#eff6ff]",
+    iconColor: "text-[#0b298f]",
+    dot: "bg-[#0b298f]",
   },
   info: {
     label: "Informacja",
-    iconBg: "bg-gray-100",
-    iconColor: "text-gray-500",
-    dot: "bg-gray-400",
-    badge: "bg-gray-100 text-gray-600",
+    iconBg: "bg-[#f1f5f9]",
+    iconColor: "text-[#475569]",
+    dot: "bg-[#94a3b8]",
   },
 };
 
@@ -94,35 +83,32 @@ function NotificationRow({
 
   return (
     <div
-      className={`flex items-start gap-4 px-5 py-4 transition-colors group ${isClickable ? "cursor-pointer hover:bg-gray-50" : ""} ${!n.read ? "bg-brand-50/30" : "bg-white"}`}
+      className={`flex items-start gap-3 px-4 py-3.5 transition-colors group ${isClickable ? "cursor-pointer" : ""} ${!n.read ? "bg-[#f8faff]" : "bg-white"} hover:bg-[#f8fafc]`}
       onClick={isClickable ? onClick : undefined}
     >
-      {/* Kolorowa ikona */}
-      <div className={`flex items-center justify-center w-11 h-11 rounded-xl shrink-0 ${cfg.iconBg} ${cfg.iconColor}`}>
+      {/* Ikona */}
+      <div className={`flex items-center justify-center w-9 h-9 rounded-xl shrink-0 ${cfg.iconBg} ${cfg.iconColor}`}>
         <NotificationIcon type={n.type} />
       </div>
 
       {/* Treść */}
       <div className="flex-1 min-w-0">
-        {!n.read && (
-          <div className="mb-0.5">
-            <span className={`w-1.5 h-1.5 rounded-full inline-block ${cfg.dot}`} />
-          </div>
-        )}
-
-        <p className={`text-sm leading-snug ${!n.read ? "font-semibold text-gray-900" : "font-medium text-gray-700"}`}>
-          {n.title}
-        </p>
-
-        <p className="text-sm text-gray-500 mt-0.5 leading-snug">{n.message}</p>
-
-        <p className="text-xs text-gray-400 mt-1.5">{formatNotificationTime(n.createdAt)}</p>
+        <div className="flex items-center gap-2 mb-0.5">
+          {!n.read && (
+            <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${cfg.dot}`} />
+          )}
+          <p className={`text-[13px] leading-snug ${!n.read ? "font-semibold text-[#0f172a]" : "font-medium text-[#0f172a]"}`}>
+            {n.title}
+          </p>
+        </div>
+        <p className="text-[13px] text-[#475569] leading-snug">{n.message}</p>
+        <p className="text-[11px] text-[#94a3b8] mt-1">{formatNotificationTime(n.createdAt)}</p>
       </div>
 
-      {/* Przycisk usunięcia */}
+      {/* Usuń */}
       <button
         onClick={(e) => { e.stopPropagation(); onDelete(); }}
-        className="shrink-0 p-1.5 rounded-md text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors opacity-0 group-hover:opacity-100"
+        className="shrink-0 p-1.5 rounded-lg text-[#cbd5e1] hover:text-[#ef4444] hover:bg-[#fef2f2] transition-colors opacity-0 group-hover:opacity-100"
         title="Usuń powiadomienie"
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
@@ -142,9 +128,9 @@ export default function NotificationsView() {
     isLoading,
     isLoadingMore,
     loadMore,
-    markAsRead,
     markAllAsRead,
     deleteNotification,
+    markAsRead,
   } = useNotifications();
   const router = useRouter();
 
@@ -156,59 +142,56 @@ export default function NotificationsView() {
   if (status === "loading" || isLoading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0b298f] border-t-transparent" />
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="flex items-center justify-center py-20">
-        <p className="text-sm text-gray-500">Zaloguj się, aby zobaczyć powiadomienia.</p>
+      <div className="rounded-2xl border border-[#e2e8f0] bg-white p-12 text-center">
+        <p className="text-sm text-[#475569]">Zaloguj się, aby zobaczyć powiadomienia.</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-[720px] mx-auto space-y-6">
+    <div className="flex flex-col gap-4 max-w-[720px] mx-auto w-full">
 
       {/* Nagłówek */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Centrum powiadomień</p>
-          <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Powiadomienia</h1>
+      <div className="flex items-center justify-between gap-4">
+        <h1 className="text-[#0f172a] text-[18px] font-semibold leading-snug">
+          Powiadomienia
           {unreadCount > 0 && (
-            <p className="text-sm text-gray-500 mt-1">
-              Masz {unreadCount} {pluralNotifications(unreadCount)}
-            </p>
+            <span className="ml-2 text-[14px] font-semibold text-[#94a3b8]">{unreadCount}</span>
           )}
-        </div>
+        </h1>
         {unreadCount > 0 && (
           <button
             onClick={markAllAsRead}
-            className="shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors mt-1"
+            className="shrink-0 flex items-center gap-1.5 text-[13px] font-medium text-[#475569] hover:text-[#0f172a] transition-colors"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
-            Oznacz wszystkie
+            Oznacz wszystkie jako przeczytane
           </button>
         )}
       </div>
 
       {/* Lista */}
       {notifications.length === 0 ? (
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm px-6 py-16 text-center">
-          <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 mx-auto mb-4">
-            <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+        <div className="bg-white border border-[#e2e8f0] rounded-2xl p-16 text-center">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#f1f5f9] mx-auto mb-4">
+            <svg className="w-6 h-6 text-[#94a3b8]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
             </svg>
           </div>
-          <p className="text-sm font-medium text-gray-700 mb-1">Brak powiadomień</p>
-          <p className="text-xs text-gray-400">Tu pojawią się informacje o nowych zleceniach i ofertach</p>
+          <p className="text-[14px] font-medium text-[#0f172a] mb-1">Brak powiadomień</p>
+          <p className="text-[13px] text-[#475569]">Tu pojawią się informacje o nowych zleceniach i ofertach</p>
         </div>
       ) : (
-        <div className="rounded-lg border border-gray-200 bg-white shadow-sm overflow-hidden divide-y divide-gray-100">
+        <div className="bg-white border border-[#e2e8f0] rounded-2xl overflow-hidden divide-y divide-[#f1f5f9]">
           {notifications.map((n) => (
             <NotificationRow
               key={n.id}
@@ -219,33 +202,31 @@ export default function NotificationsView() {
           ))}
 
           {hasMore && (
-            <div className="px-5 py-4 bg-white">
+            <div className="px-4 py-3">
               <button
                 onClick={loadMore}
                 disabled={isLoadingMore}
-                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-lg border border-gray-200 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-[#e2e8f0] text-[14px] font-medium text-[#475569] hover:text-[#0f172a] hover:border-[#cbd5e1] transition-colors disabled:opacity-50"
               >
                 {isLoadingMore ? (
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-400 border-t-transparent" />
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-[#94a3b8] border-t-transparent" />
                 ) : (
                   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
                   </svg>
                 )}
-                {isLoadingMore ? "Ładowanie..." : "Pokaż więcej"}
+                {isLoadingMore ? "Ładowanie..." : "Załaduj więcej"}
               </button>
             </div>
           )}
         </div>
       )}
 
-      {notifications.length > 0 && (
-        <p className="text-xs text-gray-400 text-center">
-          Wyświetlono {notifications.length} {notifications.length === 1 ? "powiadomienie" : "powiadomień"}
-          {hasMore ? " — przewiń, aby załadować więcej" : ""}
+      {notifications.length > 0 && !hasMore && (
+        <p className="text-[12px] text-[#94a3b8] text-center py-1">
+          Wyświetlono wszystkie {notifications.length} {notifications.length === 1 ? "powiadomienie" : "powiadomień"}
         </p>
       )}
-
     </div>
   );
 }

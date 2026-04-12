@@ -73,9 +73,7 @@ function formatDate(date: string, time: string): string {
 export function DashboardBox({
   offers,
 }: {
-  label: string;
   offers: OfferWithRequest[];
-  emptyText: string;
 }) {
   const recent = offers.slice(0, 5);
 

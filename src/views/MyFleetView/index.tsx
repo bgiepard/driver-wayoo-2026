@@ -187,30 +187,28 @@ export default function MyFleetView() {
   if (status === "loading" || loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#0b298f] border-t-transparent" />
       </div>
     );
   }
 
   if (!session) {
     return (
-      <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-12 text-center">
-        <p className="text-gray-500">Zaloguj sie, aby zarzadzac swoimi pojazdami.</p>
+      <div className="rounded-2xl border border-[#e2e8f0] bg-white p-12 text-center">
+        <p className="text-sm text-[#475569]">Zaloguj się, aby zarządzać swoimi pojazdami.</p>
       </div>
     );
   }
 
   return (
     <>
-      <div className="space-y-5">
-        <div className="flex items-end justify-between">
-          <div>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Flota</p>
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Moja flota</h1>
-          </div>
+      <div className="flex flex-col gap-4 max-w-[1150px] mx-auto w-full">
+        {/* Nagłówek */}
+        <div className="flex items-center justify-between gap-4">
+          <h1 className="text-[#0f172a] text-[18px] font-semibold leading-snug">Moja flota</h1>
           <button
             onClick={openAddModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-lg transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0b298f] hover:bg-[#0a2070] text-white text-[14px] font-semibold rounded-xl transition-colors shrink-0"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -220,17 +218,20 @@ export default function MyFleetView() {
         </div>
 
         {vehicles.length === 0 ? (
-          <div className="rounded-lg border border-gray-200 bg-white shadow-sm p-16 text-center">
-            <div className="flex items-center justify-center w-12 h-12 rounded-lg bg-gray-100 mx-auto mb-4">
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+          <div className="bg-white border border-[#e2e8f0] rounded-2xl p-16 text-center">
+            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-[#f1f5f9] mx-auto mb-4">
+              <svg className="w-6 h-6 text-[#94a3b8]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
               </svg>
             </div>
-            <p className="text-sm font-medium text-gray-700 mb-1">Brak pojazdów w flocie</p>
-            <p className="text-xs text-gray-400 mb-4">Dodaj pierwszy pojazd, aby móc go wybierać przy składaniu ofert.</p>
-            <button onClick={openAddModal} className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors">
+            <p className="text-[14px] font-medium text-[#0f172a] mb-1">Brak pojazdów w flocie</p>
+            <p className="text-[13px] text-[#475569] mb-5">Dodaj pierwszy pojazd, aby móc go wybierać przy składaniu ofert.</p>
+            <button
+              onClick={openAddModal}
+              className="inline-flex items-center gap-1.5 text-[14px] font-semibold text-[#0b298f] hover:text-[#0a2070] transition-colors"
+            >
               Dodaj pierwszy pojazd
-              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
               </svg>
             </button>
@@ -280,21 +281,21 @@ export default function MyFleetView() {
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setDeleteConfirm(null)} />
-          <div className="relative w-full max-w-sm mx-4 rounded-xl border border-gray-200 bg-white p-6 shadow-xl">
+          <div className="relative w-full max-w-sm mx-4 rounded-2xl border border-[#e2e8f0] bg-white p-6 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-red-50">
-                <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+              <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-[#fef2f2]">
+                <svg className="w-5 h-5 text-[#ef4444]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-base font-bold text-gray-900">Usunąć pojazd?</h3>
-                <p className="text-sm text-gray-500">Tej operacji nie można cofnąć.</p>
+                <h3 className="text-[15px] font-semibold text-[#0f172a]">Usunąć pojazd?</h3>
+                <p className="text-[13px] text-[#475569]">Tej operacji nie można cofnąć.</p>
               </div>
             </div>
             <div className="flex gap-3">
-              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm font-medium text-gray-700 transition-colors">Anuluj</button>
-              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2.5 rounded-lg bg-red-500 hover:bg-red-600 text-sm font-medium text-white transition-colors">Usuń</button>
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2.5 rounded-xl border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] text-[13px] font-medium text-[#475569] transition-colors">Anuluj</button>
+              <button onClick={() => handleDelete(deleteConfirm)} className="flex-1 py-2.5 rounded-xl bg-[#ef4444] hover:bg-[#dc2626] text-[13px] font-medium text-white transition-colors">Usuń</button>
             </div>
           </div>
         </div>
