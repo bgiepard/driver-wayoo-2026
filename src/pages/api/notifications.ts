@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth/[...nextauth]";
-import { notificationsTable } from "@/lib/airtable";
+import { notificationsTable, safe } from "@/lib/airtable";
 
 const PAGE_SIZE = 7;
 
@@ -45,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       // Pobieramy o 1 więcej niż limit — żeby sprawdzić czy są kolejne
       const records = await notificationsTable
         .select({
-          filterByFormula: `{userId} = '${driverId}'`,
+          filterByFormula: `{userId} = '${safe(driverId)}'`,
           sort: [{ field: "createdAt", direction: "desc" }],
           maxRecords: limit + 1,
         })
@@ -92,7 +92,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const unreadRecords = await notificationsTable
         .select({
-          filterByFormula: `AND({userId} = '${driverId}', {read} = FALSE())`,
+          filterByFormula: `AND({userId} = '${safe(driverId)}', {read} = FALSE())`,
         })
         .all();
 

@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "./auth/[...nextauth]";
-import { vehiclesTable, driversTable } from "@/lib/airtable";
+import { vehiclesTable, driversTable, safe } from "@/lib/airtable";
 import type { Vehicle, CreateVehicleData } from "@/models";
 
 export default async function handler(
@@ -17,7 +17,7 @@ export default async function handler(
   // Pobierz ID kierowcy
   const driverRecords = await driversTable
     .select({
-      filterByFormula: `{email} = '${session.user.email}'`,
+      filterByFormula: `{email} = '${safe(session.user.email)}'`,
       maxRecords: 1,
     })
     .firstPage();
@@ -33,7 +33,7 @@ export default async function handler(
     try {
       const records = await vehiclesTable
         .select({
-          filterByFormula: `{driverId} = '${driverId}'`,
+          filterByFormula: `{driverId} = '${safe(driverId)}'`,
           sort: [{ field: "createdAt", direction: "desc" }],
         })
         .all();
@@ -51,7 +51,7 @@ export default async function handler(
         color: record.get("color") as string,
         description: record.get("description") as string | undefined,
         fuelConsumption: record.get("fuelConsumption") as number | undefined,
-        photos: JSON.parse((record.get("photos") as string) || "[]"),
+        photos: (() => { try { const r = record.get("photos") as string; return r ? JSON.parse(r) : []; } catch { return []; } })(),
         hasWifi: record.get("hasWifi") as boolean,
         hasWC: record.get("hasWC") as boolean,
         hasTV: record.get("hasTV") as boolean,
@@ -125,7 +125,7 @@ export default async function handler(
       // Sprawdz czy pojazd nalezy do kierowcy
       const existingRecords = await vehiclesTable
         .select({
-          filterByFormula: `AND({driverId} = '${driverId}', RECORD_ID() = '${id}')`,
+          filterByFormula: `AND({driverId} = '${safe(driverId)}', RECORD_ID() = '${safe(id)}')`,
           maxRecords: 1,
         })
         .firstPage();
@@ -177,7 +177,7 @@ export default async function handler(
       // Sprawdz czy pojazd nalezy do kierowcy
       const existingRecords = await vehiclesTable
         .select({
-          filterByFormula: `AND({driverId} = '${driverId}', RECORD_ID() = '${id}')`,
+          filterByFormula: `AND({driverId} = '${safe(driverId)}', RECORD_ID() = '${safe(id)}')`,
           maxRecords: 1,
         })
         .firstPage();

@@ -38,9 +38,9 @@ export default async function handler(
         const allRequests = await getAvailableRequests();
         const offeredRequestIds = await getDriverOfferedRequestIds(driverId);
 
-        const availableRequests = allRequests.filter(
-          (r) => !offeredRequestIds.includes(r.id)
-        );
+        const availableRequests = allRequests
+          .filter((r) => !offeredRequestIds.includes(r.id))
+          .map(({ userEmail, userId, ...rest }) => rest);
 
         return res.status(200).json(availableRequests);
       }

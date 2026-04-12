@@ -46,10 +46,15 @@ export default async function handler(
   }
 
   if (req.method === "POST") {
-    const { requestId, price, message, vehicleId } = req.body;
+    const { requestId, message, vehicleId } = req.body;
+    const price = parseFloat(req.body.price);
 
-    if (!requestId || !price) {
-      return res.status(400).json({ error: "Request ID and price are required" });
+    if (!requestId) {
+      return res.status(400).json({ error: "Request ID is required" });
+    }
+
+    if (!Number.isFinite(price) || price <= 0) {
+      return res.status(400).json({ error: "Cena musi być liczbą większą od zera" });
     }
 
     try {

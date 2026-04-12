@@ -1,6 +1,6 @@
 import type { FieldSet, Record as AirtableRecord } from "airtable";
 import bcrypt from "bcryptjs";
-import { driversTable } from "@/lib/airtable";
+import { driversTable, safe } from "@/lib/airtable";
 import type { Driver, CreateDriverData, DriverAuthProvider } from "@/models";
 
 function mapRecordToDriver(record: AirtableRecord<FieldSet>): Driver {
@@ -15,10 +15,9 @@ function mapRecordToDriver(record: AirtableRecord<FieldSet>): Driver {
 }
 
 export async function findDriverByEmail(email: string): Promise<Driver | null> {
-  const safeEmail = email.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
   const records = await driversTable
     .select({
-      filterByFormula: `{email} = '${safeEmail}'`,
+      filterByFormula: `{email} = '${safe(email)}'`,
       maxRecords: 1,
     })
     .firstPage();

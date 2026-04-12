@@ -5,6 +5,9 @@ const base = new Airtable({ apiKey: process.env.AIRTABLE_API_KEY }).base(
   process.env.AIRTABLE_BASE_ID!
 );
 
+// Escapowanie wartości wstawianych do filterByFormula — zapobiega injection
+export const safe = (v: string) => v.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+
 // Eksport tabel
 export const driversTable = base(process.env.AIRTABLE_DRIVERS_TABLE || "Drivers");
 export const requestsTable = base("Requests");
