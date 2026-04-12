@@ -1,6 +1,7 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import type { RequestData, Vehicle, Route } from "@/models";
 import { vehicleTypeLabels, parseRoute } from "@/models";
 import AllRoutesMap from "@/components/AllRoutesMap";
@@ -410,6 +411,7 @@ export default function ZleceniaView() {
                       setError("");
                     } else {
                       setSelectedRequest(request.id);
+                      setError("");
                     }
                   }}
                 >
@@ -518,7 +520,7 @@ export default function ZleceniaView() {
                             <div className="p-3 bg-[#fff9ea] border border-[#fde68a] rounded-lg">
                               <p className="text-[13px] text-[#b24900]">
                                 Nie masz żadnych pojazdów w flocie.{" "}
-                                <Link href="/my-fleet" className="underline font-medium">Dodaj pojazd</Link>
+                                <Link href="/moja-flota" className="underline font-medium">Dodaj pojazd</Link>
                               </p>
                             </div>
                           )}
@@ -531,7 +533,7 @@ export default function ZleceniaView() {
                           return (
                             <div className="p-3 bg-white border border-[#e2e8f0] rounded-lg flex gap-3">
                               {vehicle.photos && vehicle.photos.length > 0 ? (
-                                <img src={vehicle.photos[0]} alt={vehicle.name} className="w-14 h-14 rounded-lg object-cover shrink-0" />
+                                <Image src={vehicle.photos[0]} alt={vehicle.name} width={56} height={56} className="rounded-lg object-cover shrink-0" />
                               ) : (
                                 <div className="w-14 h-14 rounded-lg bg-[#e0e7ff] flex items-center justify-center shrink-0">
                                   <svg className="w-5 h-5 text-[#0b298f]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -555,8 +557,8 @@ export default function ZleceniaView() {
                             value={price}
                             onChange={(e) => setPrice(e.target.value)}
                             className="w-full border border-[#e2e8f0] rounded-lg px-3 py-2.5 text-[14px] bg-white text-[#0f172a] placeholder-[#94a3b8] outline-none focus:border-[#0b298f] pr-14"
-                            min="0"
-                            step="1"
+                            min="1"
+                            step="0.01"
                           />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#94a3b8] pointer-events-none">PLN</span>
                         </div>

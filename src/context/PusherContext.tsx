@@ -58,7 +58,7 @@ export function PusherProvider({ children }: { children: ReactNode }) {
         type: "info",
         title: "Przejazd oplacony!",
         message: data.message || "Klient oplacil przejazd. Mozesz przystapic do realizacji.",
-        link: "/my-offers",
+        link: "/moje-oferty",
       });
     });
 

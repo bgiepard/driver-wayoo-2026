@@ -9,10 +9,22 @@ export default async function handler(
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { email, password, name, phone } = req.body;
+  const email = (req.body.email ?? "").trim().toLowerCase();
+  const password: string = req.body.password ?? "";
+  const name: string = (req.body.name ?? "").trim();
+  const phone: string = (req.body.phone ?? "").trim();
 
   if (!email || !password || !name) {
     return res.status(400).json({ error: "Wszystkie pola sa wymagane" });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ error: "Nieprawidłowy format adresu e-mail" });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: "Hasło musi mieć co najmniej 8 znaków" });
   }
 
   try {

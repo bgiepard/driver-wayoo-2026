@@ -58,7 +58,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           {/* Akcje po prawej */}
           <div className="flex items-center">
             {/* Dzwonek z badge */}
-            <Link href="/notifications" className="relative p-3">
+            <Link href="/powiadomienia" className="relative p-3">
               {unreadCount > 0 && (
                 <span className="absolute top-2 right-2 w-5 h-5 bg-[#FFC428] text-[#010101] text-[12px] font-bold rounded-full flex items-center justify-center z-10">
                   {unreadCount > 9 ? "9+" : unreadCount}

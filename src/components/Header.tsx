@@ -35,22 +35,16 @@ export default function Header() {
               <Link href="/" className="text-gray-600 hover:text-green-600">
                 Zlecenia
               </Link>
-              <Link href="/my-offers" className="text-gray-600 hover:text-green-600">
+              <Link href="/moje-oferty" className="text-gray-600 hover:text-green-600">
                 Moje oferty
               </Link>
-              <Link href="/my-fleet" className="text-gray-600 hover:text-green-600">
+              <Link href="/moja-flota" className="text-gray-600 hover:text-green-600">
                 Moja flota
               </Link>
 
               <div className="relative" ref={dropdownRef}>
                 <button
-                  onClick={() => {
-                    const wasOpen = isNotificationsOpen;
-                    setIsNotificationsOpen(!isNotificationsOpen);
-                    if (!wasOpen && unreadCount > 0) {
-                      markAllAsRead();
-                    }
-                  }}
+                  onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                   className="relative p-2 text-gray-500 hover:text-green-600"
                 >
                   <svg
@@ -128,7 +122,7 @@ export default function Header() {
                 )}
               </div>
 
-              <Link href="/account" className="text-gray-600 hover:text-green-600">
+              <Link href="/konto" className="text-gray-600 hover:text-green-600">
                 Konto
               </Link>
             </>

@@ -100,7 +100,7 @@ export function DashboardBox({
             return (
               <Link
                 key={offer.id}
-                href="/my-offers"
+                href="/moje-oferty"
                 className="flex items-center justify-between px-6 py-3 hover:bg-[#f8fafc] transition-colors"
               >
                 {/* Trasa */}

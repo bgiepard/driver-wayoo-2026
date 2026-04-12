@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Vehicle, CreateVehicleData } from "@/models";
 import { brandNames, getModelsForBrand } from "@/data/vehicleBrands";
 
@@ -229,7 +230,7 @@ export function VehicleFormModal({
                     onDragEnd={onDragEnd}
                     className={`relative aspect-square rounded-lg overflow-hidden bg-gray-100 cursor-move group ring-1 ${dragIndex === index ? "opacity-50 ring-brand-400" : index === 0 ? "ring-brand-400" : "ring-gray-200"}`}
                   >
-                    <img src={photo} alt="" className="w-full h-full object-cover" />
+                    <Image src={photo} alt="" fill className="object-cover" sizes="20vw" />
                     {index === 0 && (
                       <div className="absolute bottom-0 left-0 right-0 bg-brand-500 text-white text-[10px] font-medium text-center py-0.5">Główne</div>
                     )}

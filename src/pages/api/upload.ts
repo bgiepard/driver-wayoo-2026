@@ -39,20 +39,23 @@ export default async function handler(
       return res.status(400).json({ error: "Brak zdjecia" });
     }
 
-    // Sprawdź konfigurację
-    console.log("Cloudinary config:", {
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY ? "SET" : "NOT SET",
-      api_secret: process.env.CLOUDINARY_API_SECRET ? "SET" : "NOT SET",
-    });
+    // Walidacja typu — tylko obrazy
+    const allowedTypes = ["data:image/jpeg", "data:image/jpg", "data:image/png", "data:image/webp"];
+    const isValidType = allowedTypes.some((t) => image.startsWith(t));
+    if (!isValidType) {
+      return res.status(400).json({ error: "Dozwolone formaty: JPG, PNG, WebP" });
+    }
+
+    // Walidacja rozmiaru — base64 ~10 MB → string ≈ 13.7 MB
+    if (image.length > 14_000_000) {
+      return res.status(400).json({ error: "Zdjęcie nie może przekraczać 10 MB" });
+    }
 
     // Upload do Cloudinary
     const result = await cloudinary.uploader.upload(image, {
       folder: "wayoo-fleet",
       resource_type: "image",
     });
-
-    console.log("Upload success:", result.secure_url);
 
     return res.status(200).json({
       url: result.secure_url,

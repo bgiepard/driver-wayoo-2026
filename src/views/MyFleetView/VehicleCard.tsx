@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { Vehicle } from "@/models";
 import { vehicleTypeLabels } from "@/models";
 
@@ -104,9 +105,9 @@ export function VehicleCard({
                 <button
                   key={index}
                   onClick={() => onPhotoClick(photos, index)}
-                  className="w-[72px] h-[72px] rounded-xl overflow-hidden bg-[#f1f5f9] shrink-0 hover:opacity-90 transition-opacity cursor-pointer"
+                  className="relative w-[72px] h-[72px] rounded-xl overflow-hidden bg-[#f1f5f9] shrink-0 hover:opacity-90 transition-opacity cursor-pointer"
                 >
-                  <img src={photo} alt={`${vehicle.name} ${index + 1}`} className="w-full h-full object-cover" />
+                  <Image src={photo} alt={`${vehicle.name} ${index + 1}`} fill className="object-cover" sizes="72px" />
                 </button>
               ))}
               {extraCount > 0 && (

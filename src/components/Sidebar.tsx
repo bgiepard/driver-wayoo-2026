@@ -35,7 +35,7 @@ const mainNavItems = [
     ),
   },
   {
-    href: "/my-offers",
+    href: "/moje-oferty",
     label: "Moje oferty",
     icon: (
       <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 20 20">
@@ -44,7 +44,7 @@ const mainNavItems = [
     ),
   },
   {
-    href: "/trip-history",
+    href: "/historia-przejazdow",
     label: "Historia przejazdów",
     icon: (
       <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 20 20">
@@ -53,7 +53,7 @@ const mainNavItems = [
     ),
   },
   {
-    href: "/notifications",
+    href: "/powiadomienia",
     label: "Powiadomienia",
     badge: true,
     icon: (
@@ -66,7 +66,7 @@ const mainNavItems = [
 
 const secondaryNavItems = [
   {
-    href: "/my-fleet",
+    href: "/moja-flota",
     label: "Moja flota",
     icon: (
       <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="17 12 18 16">
@@ -75,7 +75,7 @@ const secondaryNavItems = [
     ),
   },
   {
-    href: "/business-card",
+    href: "/moja-wizytowka",
     label: "Moja wizytówka",
     icon: (
       <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="17 13 18 15">
@@ -84,7 +84,7 @@ const secondaryNavItems = [
     ),
   },
   {
-    href: "/account",
+    href: "/konto",
     label: "Moje konto",
     icon: (
       <svg className="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 20 20">
@@ -191,22 +191,22 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
         </ul>
 
         {/* Coming soon */}
-        {/*<ul className="flex flex-col gap-1 mt-auto pt-4">*/}
-        {/*  {[*/}
-        {/*    { label: "Statystyki", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },*/}
-        {/*    { label: "ESG", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },*/}
-        {/*    { label: "Automatyczna wycena", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> },*/}
-        {/*    { label: "Promowanie", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg> },*/}
-        {/*  ].map((item) => (*/}
-        {/*    <li key={item.label}>*/}
-        {/*      <div className="flex items-center gap-3.5 px-4 py-3 rounded-md text-[12px] cursor-not-allowed">*/}
-        {/*        <span className="text-white/30 shrink-0">{item.icon}</span>*/}
-        {/*        <span className="text-white/30">{item.label}</span>*/}
-        {/*        <span className="ml-auto text-[10px] bg-white/10 text-white/40 px-1.5 py-0.5 rounded shrink-0">wkrótce</span>*/}
-        {/*      </div>*/}
-        {/*    </li>*/}
-        {/*  ))}*/}
-        {/*</ul>*/}
+        <ul className="flex flex-col gap-1 mt-auto pt-4 pb-4">
+          {[
+            { label: "Statystyki", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg> },
+            { label: "ESG", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> },
+            { label: "Automatyczna wycena", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg> },
+            { label: "Promowanie", icon: <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" /></svg> },
+          ].map((item) => (
+            <li key={item.label}>
+              <div className="flex items-center gap-2 px-4 py-1 rounded-md text-[10px] cursor-not-allowed">
+                <span className="text-white/30 shrink-0">{item.icon}</span>
+                <span className="text-white/30">{item.label}</span>
+                <span className="ml-auto text-[8px] bg-white/10 text-white/40 px-1.5 py-0.5 rounded shrink-0">wkrótce</span>
+              </div>
+            </li>
+          ))}
+        </ul>
       </nav>
 
       {/* Profil */}
