@@ -5,12 +5,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Komendy
 
 ```bash
-yarn dev      # dev server na porcie 3001
-yarn build    # produkcyjny build
-yarn lint     # ESLint
+yarn dev              # dev server na porcie 3001
+yarn build            # produkcyjny build
+yarn lint             # ESLint
+npx tsc --noEmit      # sprawdzenie typów
 ```
 
-Brak testów w projekcie.
+Brak testów jednostkowych w projekcie.
 
 ## Czym jest WAYOO
 
@@ -33,7 +34,7 @@ Obie aplikacje współdzielą bazę Airtable i kanały Pusher, ale mają osobne 
 - **Next.js 16** (Pages Router, NIE App Router) + **React 19** + **TypeScript 5**
 - **Tailwind CSS 4** — stylowanie
 - **Airtable** — baza danych (tabele: Users, Drivers, Requests, Offers, Vehicles, Notifications)
-- **NextAuth 4** (JWT strategy) — autentykacja (email/hasło + Google OAuth)
+- **NextAuth 4** (JWT, cookie: `next-auth.session-token.driver`) — email/hasło + Google OAuth
 - **Pusher** — real-time WebSocket (powiadomienia o nowych ofertach, płatnościach)
 - **Google Maps API** — mapy tras
 - **Cloudinary** — upload zdjęć pojazdów
