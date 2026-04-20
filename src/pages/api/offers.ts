@@ -31,7 +31,7 @@ export default async function handler(
 
   if (req.method === "GET") {
     try {
-      const limit = Math.min(parseInt(req.query.limit as string) || 10, 100);
+      const limit = Math.min(parseInt(req.query.limit as string) || 10, 500);
       const status = req.query.status as string | undefined;
 
       const all = await getOffersByDriverWithRequests(driverId);

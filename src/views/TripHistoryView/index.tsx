@@ -3,24 +3,17 @@ import { useState, useEffect, useMemo } from "react";
 import type { OfferWithRequest, Vehicle } from "@/models";
 import { parseRoute } from "@/models";
 
-type TripStatus = "completed" | "cancelled";
-type TabKey = "all" | TripStatus;
+type TabKey = "all" | "upcoming" | "past";
 
 const TABS: { key: TabKey; label: string }[] = [
-  { key: "all",       label: "Wszystkie" },
-  { key: "completed", label: "Ukończone" },
-  { key: "cancelled", label: "Anulowane" },
+  { key: "all",      label: "Wszystkie" },
+  { key: "upcoming", label: "Nadchodzące" },
+  { key: "past",     label: "Zrealizowane" },
 ];
 
-const STATUS_CONFIG: Record<TripStatus, { label: string; bg: string; text: string; dot: string }> = {
-  completed: { label: "Ukończony", bg: "bg-[#e6f6ec]", text: "text-[#01a83d]", dot: "bg-[#01a83d]" },
-  cancelled: { label: "Anulowany", bg: "bg-[#f1f5f9]", text: "text-[#475569]", dot: "bg-[#94a3b8]" },
-};
-
-function offerStatusToTripStatus(status: string): TripStatus | null {
-  if (status === "paid") return "completed";
-  if (status === "canceled" || status === "rejected") return "cancelled";
-  return null;
+function isPastDate(dateStr: string): boolean {
+  if (!dateStr) return false;
+  return new Date(dateStr) < new Date(new Date().toDateString());
 }
 
 function formatDate(dateStr: string): string {
@@ -62,9 +55,8 @@ export default function TripHistoryView() {
       const vehiclesJson = await vehiclesRes.json();
 
       const historyOffers = (offersJson.offers as OfferWithRequest[] || []).filter(
-        (o) => offerStatusToTripStatus(o.status) !== null
+        (o) => o.status === "paid"
       );
-      // Sortuj malejąco po dacie zlecenia
       historyOffers.sort((a, b) => {
         const dateA = a.request?.date ?? "";
         const dateB = b.request?.date ?? "";
@@ -85,28 +77,17 @@ export default function TripHistoryView() {
     [vehicles]
   );
 
-  const tripsWithStatus = useMemo(
-    () =>
-      offers.map((offer) => ({
-        offer,
-        tripStatus: offerStatusToTripStatus(offer.status) as TripStatus,
-      })),
-    [offers]
-  );
-
-  const filtered = useMemo(
-    () =>
-      activeTab === "all"
-        ? tripsWithStatus
-        : tripsWithStatus.filter((t) => t.tripStatus === activeTab),
-    [tripsWithStatus, activeTab]
-  );
+  const filtered = useMemo(() => {
+    if (activeTab === "upcoming") return offers.filter((o) => !isPastDate(o.request?.date ?? ""));
+    if (activeTab === "past") return offers.filter((o) => isPastDate(o.request?.date ?? ""));
+    return offers;
+  }, [offers, activeTab]);
 
   const tabCounts: Record<TabKey, number> = useMemo(() => ({
-    all: tripsWithStatus.length,
-    completed: tripsWithStatus.filter((t) => t.tripStatus === "completed").length,
-    cancelled: tripsWithStatus.filter((t) => t.tripStatus === "cancelled").length,
-  }), [tripsWithStatus]);
+    all: offers.length,
+    upcoming: offers.filter((o) => !isPastDate(o.request?.date ?? "")).length,
+    past: offers.filter((o) => isPastDate(o.request?.date ?? "")).length,
+  }), [offers]);
 
   if (status === "loading" || loading) {
     return (
@@ -161,7 +142,7 @@ export default function TripHistoryView() {
         </div>
       ) : (
         <div className="flex flex-col gap-2">
-          {filtered.map(({ offer, tripStatus }) => {
+          {filtered.map((offer) => {
             const req = offer.request;
             const route = req ? parseRoute(req.route) : null;
             const origin = route?.origin.address.split(",")[0] ?? "—";
@@ -170,7 +151,7 @@ export default function TripHistoryView() {
             const distanceKm = route?.distanceKm ?? null;
             const totalPassengers = req ? (req.adults + (req.children ?? 0)) : 0;
             const vehicle = offer.vehicleId ? vehicleMap.get(offer.vehicleId) : undefined;
-            const s = STATUS_CONFIG[tripStatus];
+            const isPast = isPastDate(req?.date ?? "");
 
             return (
               <div
@@ -248,9 +229,9 @@ export default function TripHistoryView() {
                       {offer.price.toLocaleString("pl-PL")} zł
                     </span>
                   )}
-                  <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[12px] font-medium ${s.bg} ${s.text}`}>
-                    <span className={`w-1.5 h-1.5 rounded-full ${s.dot} shrink-0`} />
-                    {s.label}
+                  <span className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-[12px] font-medium ${isPast ? "bg-[#f1f5f9] text-[#475569]" : "bg-[#e6f6ec] text-[#01a83d]"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isPast ? "bg-[#94a3b8]" : "bg-[#01a83d]"}`} />
+                    {isPast ? "Zrealizowany" : "Opłacony"}
                   </span>
                 </div>
               </div>
