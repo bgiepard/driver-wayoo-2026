@@ -55,7 +55,7 @@ export default function TripHistoryView() {
       const vehiclesJson = await vehiclesRes.json();
 
       const historyOffers = (offersJson.offers as OfferWithRequest[] || []).filter(
-        (o) => o.status === "paid"
+        (o) => o.status === "accepted"
       );
       historyOffers.sort((a, b) => {
         const dateA = a.request?.date ?? "";

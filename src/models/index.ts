@@ -46,7 +46,7 @@ export interface Route {
 export type RequestStatus =
   | 'draft'
   | 'published'
-  | 'paid'
+  | 'accepted'
   | 'completed'
   | 'canceled';
 
@@ -102,7 +102,7 @@ export function getRouteDisplay(routeJson: string): string {
 // --------------------------------------------
 export type OfferStatus =
   | 'new'       // Nowa oferta, oczekuje na decyzję
-  | 'paid'      // Opłacona
+  | 'accepted'  // Wybrana przez pasażera
   | 'canceled'  // Anulowana przez kierowcę
   | 'rejected'; // Odrzucona (gdy inna oferta została zaakceptowana)
 

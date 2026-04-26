@@ -2,11 +2,11 @@ import Link from "next/link";
 import type { OfferWithRequest } from "@/models";
 import { parseRoute } from "@/models";
 
-type OfferStatus = "new" | "paid" | "rejected" | "canceled";
+type OfferStatus = "new" | "accepted" | "rejected" | "canceled";
 
 const STATUS_CONFIG: Record<OfferStatus, { label: string; bg: string; text: string; icon: React.ReactNode }> = {
-  paid: {
-    label: "Opłacona",
+  accepted: {
+    label: "Wybrana",
     bg: "bg-[#e6f6ec]",
     text: "text-[#01a83d]",
     icon: (

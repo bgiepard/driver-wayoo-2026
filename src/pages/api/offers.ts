@@ -8,7 +8,9 @@ import {
   getRequestById,
 } from "@/services";
 import { notifyNewOffer } from "@/lib/pusher";
-import { notificationsTable } from "@/lib/airtable";
+import { notificationsTable, driversTable, usersTable } from "@/lib/airtable";
+
+const OFFER_POINT_COST = 1;
 
 interface SessionUser {
   id?: string;
@@ -58,19 +60,52 @@ export default async function handler(
     }
 
     try {
-      const alreadyOffered = await hasDriverOfferedOnRequest(driverId, requestId);
+      // Sprawdź saldo punktów kierowcy
+      const driverRecord = await driversTable.find(driverId);
+      const currentPoints = (driverRecord.get("points") as number) || 0;
 
+      if (currentPoints < OFFER_POINT_COST) {
+        return res.status(403).json({ error: "insufficient_points", message: "Nie masz wystarczającej liczby punktów, aby złożyć ofertę." });
+      }
+
+      const alreadyOffered = await hasDriverOfferedOnRequest(driverId, requestId);
       if (alreadyOffered) {
         return res.status(400).json({ error: "Juz zlozyles oferte na to zlecenie" });
       }
 
       const offer = await createOffer(requestId, driverId, price, message || "", vehicleId);
 
-      // Pobierz request aby uzyskac userId pasazera i trase
+      // Odejmij punkt po udanym stworzeniu oferty
+      try {
+        await driversTable.update(driverId, { points: currentPoints - OFFER_POINT_COST });
+      } catch (pointsError) {
+        console.error("[api/offers] Błąd odejmowania punktów:", pointsError);
+      }
+
+      // Pobierz request i dane pasażera
       const request = await getRequestById(requestId);
       const passengerId = request?.userId;
 
-      // Parsuj trase z requestu
+      let passengerContact: { name: string | null; phone: string | null; email: string | null } = {
+        name: null,
+        phone: null,
+        email: request?.userEmail || null,
+      };
+
+      if (passengerId) {
+        try {
+          const userRecord = await usersTable.find(passengerId);
+          passengerContact = {
+            name: `${userRecord.get("firstName") || ""} ${userRecord.get("lastName") || ""}`.trim() || null,
+            phone: (userRecord.get("phone") as string) || null,
+            email: (userRecord.get("email") as string) || request?.userEmail || null,
+          };
+        } catch {
+          // Fallback — używamy danych z requestu
+        }
+      }
+
+      // Parsuj trasę dla powiadomienia
       let routeOrigin = "";
       let routeDestination = "";
       try {
@@ -83,7 +118,7 @@ export default async function handler(
 
       const routeLabel = routeOrigin && routeDestination ? `${routeOrigin} → ${routeDestination}` : "";
 
-      // 1. Zapisz powiadomienie do bazy danych (dla pasazera)
+      // Zapisz powiadomienie dla pasażera
       if (passengerId) {
         try {
           await notificationsTable.create({
@@ -100,7 +135,7 @@ export default async function handler(
         }
       }
 
-      // 2. Wyslij powiadomienie przez Pusher (real-time)
+      // Wyślij Pusher do pasażera
       try {
         await notifyNewOffer(requestId, {
           offerId: offer.id,
@@ -116,7 +151,11 @@ export default async function handler(
         // Ignore Pusher errors
       }
 
-      return res.status(201).json(offer);
+      return res.status(201).json({
+        ...offer,
+        passengerContact,
+        pointsRemaining: currentPoints - OFFER_POINT_COST,
+      });
     } catch {
       return res.status(500).json({ error: "Failed to create offer" });
     }

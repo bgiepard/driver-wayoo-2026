@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, ReactNode, useState } from "react";
 import { useSession } from "next-auth/react";
-import { getPusherClient, type OfferPaidEvent } from "@/lib/pusher-client";
+import { getPusherClient, type OfferAcceptedEvent } from "@/lib/pusher-client";
 import { useNotifications } from "./NotificationsContext";
 
 interface PusherContextType {
@@ -53,11 +53,11 @@ export function PusherProvider({ children }: { children: ReactNode }) {
     const channel = pusher.subscribe(channelName);
     subscribedChannelRef.current = channelName;
 
-    channel.bind("offer-paid", (data: OfferPaidEvent) => {
+    channel.bind("offer-accepted", (data: OfferAcceptedEvent) => {
       addLocalNotificationRef.current({
         type: "info",
-        title: "Przejazd oplacony!",
-        message: data.message || "Klient oplacil przejazd. Mozesz przystapic do realizacji.",
+        title: "Twoja oferta została wybrana!",
+        message: data.message || "Pasażer wybrał Twoją ofertę. Skontaktuj się z nim.",
         link: "/moje-oferty",
       });
     });

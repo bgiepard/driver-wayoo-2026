@@ -1,10 +1,10 @@
 import type { OfferWithRequest } from "@/models";
 import { parseRoute } from "@/models";
 
-type OfferStatus = "new" | "paid" | "rejected" | "canceled";
+type OfferStatus = "new" | "accepted" | "rejected" | "canceled";
 
 const STATUS_CONFIG: Record<OfferStatus, { label: string; bg: string; text: string; dot: string }> = {
-  paid:     { label: "Opłacona",  bg: "bg-[#e6f6ec]", text: "text-[#01a83d]", dot: "bg-[#01a83d]" },
+  accepted: { label: "Wybrana",   bg: "bg-[#e6f6ec]", text: "text-[#01a83d]", dot: "bg-[#01a83d]" },
   new:      { label: "Oczekuje",  bg: "bg-[#fff9ea]", text: "text-[#b24900]", dot: "bg-[#b24900]" },
   rejected: { label: "Odrzucona", bg: "bg-[#fceaeb]", text: "text-[#de2b3b]", dot: "bg-[#de2b3b]" },
   canceled: { label: "Anulowana", bg: "bg-[#f1f5f9]", text: "text-[#475569]", dot: "bg-[#94a3b8]" },

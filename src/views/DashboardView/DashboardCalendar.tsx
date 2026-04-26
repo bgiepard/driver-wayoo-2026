@@ -149,7 +149,7 @@ export function DashboardCalendar({
                       {hasOffers && (
                         <div className="flex flex-col gap-0.5 w-full mt-0.5">
                           {(() => {
-                            const paid = dayOffers.filter(o => o.status === "paid").length;
+                            const paid = dayOffers.filter(o => o.status === "accepted").length;
                             const pending = dayOffers.filter(o => o.status === "new").length;
                             return (
                               <>
@@ -195,8 +195,8 @@ export function DashboardCalendar({
                               <span className="text-[12px] font-semibold text-[#0b298f]">{offer.price} zł</span>
                             </div>
                             <div className="mt-1">
-                              {offer.status === "paid" && (
-                                <span className="text-[11px] font-medium text-[#01a83d] bg-[#e6f6ec] px-1.5 py-0.5 rounded">Opłacona</span>
+                              {offer.status === "accepted" && (
+                                <span className="text-[11px] font-medium text-[#01a83d] bg-[#e6f6ec] px-1.5 py-0.5 rounded">Wybrana</span>
                               )}
                               {offer.status === "new" && (
                                 <span className="text-[11px] font-medium text-[#b24900] bg-[#fff9ea] px-1.5 py-0.5 rounded">Oczekuje</span>

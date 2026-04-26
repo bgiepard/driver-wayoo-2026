@@ -89,7 +89,7 @@ export default function DashboardView() {
 
   // Statystyki
   const pendingOffers = offers.filter((o) => o.status === "new");
-  const paidOffers = offers.filter((o) => o.status === "paid");
+  const paidOffers = offers.filter((o) => o.status === "accepted");
   const totalRevenue = paidOffers.reduce((sum, o) => sum + o.price, 0);
 
   return (

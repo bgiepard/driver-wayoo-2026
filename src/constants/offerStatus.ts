@@ -6,8 +6,8 @@ export const STATUS_CONFIG: Record<OfferStatus, { label: string; dot: string; ba
     dot: "bg-amber-400",
     badge: "bg-amber-50 text-amber-700 border-amber-200",
   },
-  paid: {
-    label: "Opłacona",
+  accepted: {
+    label: "Wybrana",
     dot: "bg-brand-500",
     badge: "bg-brand-50 text-brand-700 border-brand-200",
   },

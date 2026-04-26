@@ -13,7 +13,7 @@ export function getPusherClient(): PusherClient {
 }
 
 // Typy eventow
-export interface OfferPaidEvent {
+export interface OfferAcceptedEvent {
   offerId: string;
   requestId: string;
   message: string;

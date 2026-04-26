@@ -12,7 +12,7 @@ type TabKey = "all" | OfferStatus;
 const TABS: { key: TabKey; label: string }[] = [
   { key: "all",      label: "Wszystkie" },
   { key: "new",      label: "Oczekujące" },
-  { key: "paid",     label: "Opłacone" },
+  { key: "accepted", label: "Wybrane" },
   { key: "rejected", label: "Odrzucone" },
   { key: "canceled", label: "Anulowane" },
 ];

@@ -108,7 +108,7 @@ export default function BusinessCardView() {
     fetch("/api/offers?limit=200")
       .then((r) => r.json())
       .then((data) => {
-        const paid = (data.offers as OfferWithRequest[] || []).filter((o) => o.status === "paid");
+        const paid = (data.offers as OfferWithRequest[] || []).filter((o) => o.status === "accepted");
         setCompletedTrips(paid.length);
       })
       .catch(() => {});
