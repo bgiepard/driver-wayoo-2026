@@ -5,6 +5,7 @@ import { Geist } from "next/font/google";
 import { SessionProvider, useSession } from "next-auth/react";
 import { NotificationsProvider } from "@/context/NotificationsContext";
 import { PusherProvider } from "@/context/PusherContext";
+import { PointsProvider } from "@/context/PointsContext";
 import DashboardLayout from "@/components/DashboardLayout";
 import { useRouter } from "next/router";
 import { StatsigProvider, useClientAsyncInit } from "@statsig/react-bindings";
@@ -51,9 +52,11 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
         />
         <div className={geist.className}>
           <NotificationsProvider>
-            <PusherProvider>
-              <AppContent Component={Component} pageProps={pageProps} />
-            </PusherProvider>
+            <PointsProvider>
+              <PusherProvider>
+                <AppContent Component={Component} pageProps={pageProps} />
+              </PusherProvider>
+            </PointsProvider>
           </NotificationsProvider>
         </div>
       </SessionProvider>

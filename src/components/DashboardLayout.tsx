@@ -4,11 +4,13 @@ import Link from "next/link";
 import Image from "next/image";
 import Sidebar from "./Sidebar";
 import { useNotifications } from "@/context/NotificationsContext";
+import { usePoints } from "@/context/PointsContext";
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { unreadCount } = useNotifications();
+  const { points } = usePoints();
 
   // Zamknij sidebar mobile przy zmianie strony
   useEffect(() => {
@@ -57,6 +59,15 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
           {/* Akcje po prawej */}
           <div className="flex items-center">
+            {/* Licznik punktów */}
+            {points !== null && (
+              <Link href="/punkty" className="flex items-center gap-1 px-2.5 py-1 mr-1 rounded-full bg-[#FFC428]/20 hover:bg-[#FFC428]/30 transition-colors">
+                <svg className="w-3.5 h-3.5 text-[#FFC428]" viewBox="0 0 16 16" fill="currentColor">
+                  <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.131L8 10.5l-3.708 2.083L5 8.452 2 5.528l4.146-.772z"/>
+                </svg>
+                <span className="text-[#FFC428] text-[12px] font-bold leading-none">{points}</span>
+              </Link>
+            )}
             {/* Dzwonek z badge */}
             <Link href="/powiadomienia" className="relative p-3">
               {unreadCount > 0 && (

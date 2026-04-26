@@ -43,6 +43,7 @@ export async function createDriver(data: CreateDriverData): Promise<Driver> {
     password: hashedPassword,
     name: data.name,
     phone: data.phone || "",
+    points: 20,
   });
 
   return mapRecordToDriver(record);
@@ -71,6 +72,7 @@ export async function findOrCreateDriverByOAuth(data: {
     name: data.name,
     phone: "",
     provider: data.provider,
+    points: 20,
   });
 
   return mapRecordToDriver(record);

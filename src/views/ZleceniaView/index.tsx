@@ -7,6 +7,8 @@ import { vehicleTypeLabels, parseRoute } from "@/models";
 import AllRoutesMap from "@/components/AllRoutesMap";
 import LocationFilter, { calculateDistance } from "@/components/LocationFilter";
 import { formatTimeAgo } from "@/utils/formatTime";
+import { calculateOfferCost } from "@/utils/offerCost";
+import { usePoints } from "@/context/PointsContext";
 
 // Ikony amenities
 const IconWifi = () => (
@@ -80,6 +82,16 @@ const AMENITY_ICONS: Record<string, React.ReactNode> = {
   powerOutlet: <IconGniazdko />,
 };
 
+interface OfferSuccessData {
+  request: RequestData;
+  price: string;
+  message: string;
+  vehicleName: string;
+  passengerContact: { name: string | null; phone: string | null; email: string | null };
+  offerCost: number;
+  pointsRemaining: number;
+}
+
 export default function ZleceniaView() {
   const { data: session, status } = useSession();
   const [requests, setRequests] = useState<RequestData[]>([]);
@@ -91,7 +103,9 @@ export default function ZleceniaView() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [offerSuccess, setOfferSuccess] = useState<OfferSuccessData | null>(null);
   const isSubmittingRef = useRef(false);
+  const { points, refreshPoints } = usePoints();
   const [locationFilter, setLocationFilter] = useState<{ lat: number; lng: number; radius: number } | null>(null);
   const [minPassengers, setMinPassengers] = useState<number | "">("");
   const [maxPassengers, setMaxPassengers] = useState<number | "">("");
@@ -152,8 +166,33 @@ export default function ZleceniaView() {
       });
 
       const data = await res.json();
-      if (!res.ok) { setError(data.error || "Błąd podczas składania oferty"); return; }
+      if (!res.ok) {
+        if (data.error === "insufficient_points") {
+          setError(`Nie masz wystarczającej liczby punktów. Potrzebujesz więcej punktów, aby złożyć tę ofertę.`);
+        } else {
+          setError(data.error || "Błąd podczas składania oferty");
+        }
+        return;
+      }
 
+      const request = requests.find((r) => r.id === requestId)!;
+      const vehicle = vehicles.find((v) => v.id === selectedVehicle);
+      const route = parseRoute(request.route);
+      const totalPassengers = request.adults + (request.children ?? 0);
+      const distanceKm = route?.distanceKm ?? null;
+      const offerCost = calculateOfferCost(totalPassengers, distanceKm);
+
+      setOfferSuccess({
+        request,
+        price,
+        message,
+        vehicleName: vehicle ? `${vehicle.name} (${vehicle.brand} ${vehicle.model})` : "",
+        passengerContact: data.passengerContact ?? { name: null, phone: null, email: null },
+        offerCost,
+        pointsRemaining: data.pointsRemaining ?? 0,
+      });
+
+      await refreshPoints();
       setSelectedRequest(null);
       setPrice("");
       setMessage("");
@@ -239,6 +278,7 @@ export default function ZleceniaView() {
   }
 
   return (
+    <>
     <div className="flex flex-col gap-4 max-w-[1150px] mx-auto w-full">
 
       {/* Tytuł */}
@@ -388,6 +428,8 @@ export default function ZleceniaView() {
               const wpCount = route?.waypoints?.length ?? 0;
               const distanceKm = route?.distanceKm ?? null;
               const totalPassengers = request.adults + (request.children ?? 0);
+              const offerCost = calculateOfferCost(totalPassengers, distanceKm);
+              const canAfford = points === null || points >= offerCost;
 
               let amenities: string[] = [];
               try {
@@ -470,6 +512,13 @@ export default function ZleceniaView() {
                       <span className="flex items-center gap-1 bg-[#f1f5f9] px-2 py-1 rounded text-[12px] font-medium text-[#475569]">
                         <IconPerson />
                         {totalPassengers} os. ({request.adults}+{request.children ?? 0})
+                      </span>
+                      {/* Koszt oferty w punktach */}
+                      <span className={`flex items-center gap-1 px-2 py-1 rounded text-[12px] font-semibold ${canAfford ? "bg-[#FFC428]/15 text-[#92650a]" : "bg-red-50 text-red-500"}`}>
+                        <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                          <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.131L8 10.5l-3.708 2.083L5 8.452 2 5.528l4.146-.772z"/>
+                        </svg>
+                        {offerCost} {offerCost === 1 ? "pkt" : "pkt"}
                       </span>
                       {amenities.length > 0 && (
                         <>
@@ -574,11 +623,35 @@ export default function ZleceniaView() {
 
                         <button
                           onClick={() => handleSubmitOffer(request.id)}
-                          disabled={submitting}
-                          className="bg-[#0b298f] hover:bg-[#0a2070] text-white px-4 py-2.5 rounded-lg text-[14px] font-semibold disabled:opacity-50 transition-colors"
+                          disabled={submitting || !canAfford}
+                          className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-[14px] font-semibold transition-colors disabled:opacity-50 ${
+                            canAfford
+                              ? "bg-[#0b298f] hover:bg-[#0a2070] text-white"
+                              : "bg-red-100 text-red-500 cursor-not-allowed"
+                          }`}
                         >
-                          {submitting ? "Wysyłanie..." : "Wyślij ofertę"}
+                          {submitting ? (
+                            "Wysyłanie..."
+                          ) : canAfford ? (
+                            <>
+                              Wyślij i odblokuj kontakt
+                              <span className="flex items-center gap-1 bg-white/20 rounded px-1.5 py-0.5 text-[12px]">
+                                <svg className="w-3 h-3" viewBox="0 0 16 16" fill="currentColor">
+                                  <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.131L8 10.5l-3.708 2.083L5 8.452 2 5.528l4.146-.772z"/>
+                                </svg>
+                                {offerCost}
+                              </span>
+                            </>
+                          ) : (
+                            "Za mało punktów"
+                          )}
                         </button>
+                        {!canAfford && (
+                          <p className="text-[12px] text-red-500 text-center">
+                            Potrzebujesz {offerCost} pkt, masz {points ?? 0}.{" "}
+                            <a href="/punkty" className="underline font-medium">Kup punkty →</a>
+                          </p>
+                        )}
                       </div>
                     </div>
                   )}
@@ -603,5 +676,142 @@ export default function ZleceniaView() {
 
       </div>{/* koniec flex gap-4 */}
     </div>
+
+    {/* Modal sukcesu po złożeniu oferty */}
+    {offerSuccess && (() => {
+      const route = parseRoute(offerSuccess.request.route);
+      const origin = route?.origin.address.split(",")[0] ?? "—";
+      const destination = route?.destination.address.split(",")[0] ?? "—";
+      const { passengerContact } = offerSuccess;
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg flex flex-col overflow-hidden">
+
+            {/* Header */}
+            <div className="bg-[#0b298f] px-6 py-5 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center shrink-0">
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-white font-semibold text-[16px]">Oferta złożona!</p>
+                <p className="text-white/70 text-[13px]">Dane kontaktowe pasażera odblokowane</p>
+              </div>
+            </div>
+
+            <div className="px-6 py-5 flex flex-col gap-5">
+
+              {/* Trasa */}
+              <div className="flex flex-col gap-1">
+                <p className="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wide">Trasa</p>
+                <div className="flex items-center gap-2">
+                  <span className="text-[14px] font-medium text-[#0f172a]">{origin}</span>
+                  <svg className="w-4 h-4 text-[#94a3b8] shrink-0" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 8.25L21 12m0 0l-3.75 3.75M21 12H3" />
+                  </svg>
+                  <span className="text-[14px] font-medium text-[#0f172a]">{destination}</span>
+                </div>
+              </div>
+
+              {/* Szczegóły oferty */}
+              <div className="bg-[#f8fafc] rounded-xl border border-[#e2e8f0] p-4 flex flex-col gap-2.5">
+                <p className="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wide">Twoja oferta</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-[13px] text-[#475569]">Cena</span>
+                  <span className="text-[14px] font-semibold text-[#0f172a]">{offerSuccess.price} PLN</span>
+                </div>
+                {offerSuccess.vehicleName && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-[13px] text-[#475569]">Pojazd</span>
+                    <span className="text-[13px] font-medium text-[#0f172a]">{offerSuccess.vehicleName}</span>
+                  </div>
+                )}
+                {offerSuccess.message && (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[13px] text-[#475569]">Wiadomość</span>
+                    <span className="text-[13px] text-[#0f172a] italic">"{offerSuccess.message}"</span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between pt-1 border-t border-[#e2e8f0]">
+                  <span className="text-[13px] text-[#475569]">Koszt</span>
+                  <span className="flex items-center gap-1 text-[13px] font-medium text-[#92650a]">
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 16 16" fill="currentColor">
+                      <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.131L8 10.5l-3.708 2.083L5 8.452 2 5.528l4.146-.772z"/>
+                    </svg>
+                    -{offerSuccess.offerCost} pkt · zostało {offerSuccess.pointsRemaining} pkt
+                  </span>
+                </div>
+              </div>
+
+              {/* Dane kontaktowe pasażera */}
+              <div className="flex flex-col gap-3">
+                <p className="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-wide">Dane kontaktowe pasażera</p>
+                <div className="flex flex-col gap-2">
+                  {passengerContact.name && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#e0e7ff] flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-[#0b298f]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0" />
+                        </svg>
+                      </div>
+                      <span className="text-[14px] font-medium text-[#0f172a]">{passengerContact.name}</span>
+                    </div>
+                  )}
+                  {passengerContact.phone && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#dcfce7] flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-[#16a34a]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+                        </svg>
+                      </div>
+                      <a href={`tel:${passengerContact.phone}`} className="text-[14px] font-semibold text-[#16a34a] hover:underline">
+                        {passengerContact.phone}
+                      </a>
+                    </div>
+                  )}
+                  {passengerContact.email && (
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-[#fef9c3] flex items-center justify-center shrink-0">
+                        <svg className="w-4 h-4 text-[#ca8a04]" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+                        </svg>
+                      </div>
+                      <a href={`mailto:${passengerContact.email}`} className="text-[14px] text-[#ca8a04] hover:underline break-all">
+                        {passengerContact.email}
+                      </a>
+                    </div>
+                  )}
+                  {!passengerContact.name && !passengerContact.phone && !passengerContact.email && (
+                    <p className="text-[13px] text-[#94a3b8]">Brak danych kontaktowych pasażera.</p>
+                  )}
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-5 flex gap-3">
+              <button
+                onClick={() => setOfferSuccess(null)}
+                className="flex-1 border border-[#e2e8f0] text-[#475569] hover:bg-[#f8fafc] text-[14px] font-semibold py-3 rounded-xl transition-colors"
+              >
+                Zamknij
+              </button>
+              <Link
+                href="/moje-oferty"
+                onClick={() => setOfferSuccess(null)}
+                className="flex-1 bg-[#0b298f] hover:bg-[#0a2070] text-white text-[14px] font-semibold py-3 rounded-xl transition-colors text-center"
+              >
+                Moje oferty →
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      );
+    })()}
+    </>
   );
 }

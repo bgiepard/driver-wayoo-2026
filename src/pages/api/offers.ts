@@ -9,8 +9,7 @@ import {
 } from "@/services";
 import { notifyNewOffer } from "@/lib/pusher";
 import { notificationsTable, driversTable, usersTable } from "@/lib/airtable";
-
-const OFFER_POINT_COST = 1;
+import { calculateOfferCost } from "@/utils/offerCost";
 
 interface SessionUser {
   id?: string;
@@ -39,7 +38,26 @@ export default async function handler(
       const all = await getOffersByDriverWithRequests(driverId);
       const filtered = status ? all.filter((o) => o.status === status) : all;
       const hasMore = filtered.length > limit;
-      const offers = filtered.slice(0, limit);
+      const page = filtered.slice(0, limit);
+
+      // Pobierz dane kontaktowe pasażerów (unikalne userId)
+      const userIds = [...new Set(page.map((o) => o.request?.userId).filter((id): id is string => Boolean(id)))];
+      const contactMap = new Map<string, { name: string | null; phone: string | null; email: string | null }>();
+      await Promise.all(userIds.map(async (userId) => {
+        try {
+          const rec = await usersTable.find(userId);
+          contactMap.set(userId, {
+            name: `${rec.get("firstName") || ""} ${rec.get("lastName") || ""}`.trim() || null,
+            phone: (rec.get("phone") as string) || null,
+            email: (rec.get("email") as string) || null,
+          });
+        } catch { /* ignoruj */ }
+      }));
+
+      const offers = page.map((o) => ({
+        ...o,
+        passengerContact: o.request?.userId ? (contactMap.get(o.request.userId) ?? null) : null,
+      }));
 
       return res.status(200).json({ offers, hasMore });
     } catch {
@@ -64,8 +82,23 @@ export default async function handler(
       const driverRecord = await driversTable.find(driverId);
       const currentPoints = (driverRecord.get("points") as number) || 0;
 
-      if (currentPoints < OFFER_POINT_COST) {
-        return res.status(403).json({ error: "insufficient_points", message: "Nie masz wystarczającej liczby punktów, aby złożyć ofertę." });
+      // Oblicz koszt tej oferty na podstawie trasy i liczby pasażerów
+      const requestForCost = await getRequestById(requestId);
+      const totalPassengers = (requestForCost?.adults ?? 0) + (requestForCost?.children ?? 0);
+      let distanceKm: number | null = null;
+      try {
+        const parsedRoute = JSON.parse(requestForCost?.route || "{}");
+        distanceKm = parsedRoute?.distanceKm ?? null;
+      } catch { /* ignoruj */ }
+      const offerCost = calculateOfferCost(totalPassengers, distanceKm);
+
+      if (currentPoints < offerCost) {
+        return res.status(403).json({
+          error: "insufficient_points",
+          message: `Nie masz wystarczającej liczby punktów. Potrzebujesz ${offerCost} pkt, masz ${currentPoints}.`,
+          required: offerCost,
+          available: currentPoints,
+        });
       }
 
       const alreadyOffered = await hasDriverOfferedOnRequest(driverId, requestId);
@@ -75,15 +108,15 @@ export default async function handler(
 
       const offer = await createOffer(requestId, driverId, price, message || "", vehicleId);
 
-      // Odejmij punkt po udanym stworzeniu oferty
+      // Odejmij punkty po udanym stworzeniu oferty
       try {
-        await driversTable.update(driverId, { points: currentPoints - OFFER_POINT_COST });
+        await driversTable.update(driverId, { points: currentPoints - offerCost });
       } catch (pointsError) {
         console.error("[api/offers] Błąd odejmowania punktów:", pointsError);
       }
 
       // Pobierz request i dane pasażera
-      const request = await getRequestById(requestId);
+      const request = requestForCost;
       const passengerId = request?.userId;
 
       let passengerContact: { name: string | null; phone: string | null; email: string | null } = {
@@ -154,7 +187,7 @@ export default async function handler(
       return res.status(201).json({
         ...offer,
         passengerContact,
-        pointsRemaining: currentPoints - OFFER_POINT_COST,
+        pointsRemaining: currentPoints - offerCost,
       });
     } catch {
       return res.status(500).json({ error: "Failed to create offer" });

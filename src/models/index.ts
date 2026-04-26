@@ -116,8 +116,15 @@ export interface OfferData {
   status: OfferStatus;
 }
 
+export interface PassengerContact {
+  name: string | null;
+  phone: string | null;
+  email: string | null;
+}
+
 export interface OfferWithRequest extends OfferData {
   request?: RequestData;
+  passengerContact?: PassengerContact | null;
 }
 
 // --------------------------------------------

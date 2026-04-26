@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/router";
 import LoginModal from "./LoginModal";
 import { useNotifications } from "@/context/NotificationsContext";
+import { usePoints } from "@/context/PointsContext";
 
 const mainNavItems = [
   {
@@ -125,6 +126,7 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
   const router = useRouter();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { unreadCount } = useNotifications();
+  const { points } = usePoints();
 
   if (!session) {
     return (
@@ -208,6 +210,22 @@ export default function Sidebar({ onClose }: { onClose?: () => void }) {
           ))}
         </ul>
       </nav>
+
+      {/* Saldo punktów */}
+      {points !== null && (
+        <Link
+          href="/punkty"
+          className="mx-4 mb-3 flex items-center justify-between gap-2 rounded-lg bg-[#FFC428]/15 hover:bg-[#FFC428]/25 transition-colors px-3 py-2"
+        >
+          <div className="flex items-center gap-2">
+            <svg className="w-4 h-4 text-[#FFC428] shrink-0" viewBox="0 0 16 16" fill="currentColor">
+              <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.131L8 10.5l-3.708 2.083L5 8.452 2 5.528l4.146-.772z"/>
+            </svg>
+            <span className="text-[13px] text-white/80">Punkty</span>
+          </div>
+          <span className="text-[15px] font-bold text-[#FFC428]">{points}</span>
+        </Link>
+      )}
 
       {/* Profil */}
       <div className="px-4">
